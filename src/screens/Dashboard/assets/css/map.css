@@ -1,0 +1,209 @@
+/* Style général pour la page */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Conteneur principal */
+  div {
+    padding: 1px;
+  }
+  
+  /* Style pour le titre principal */
+  h1 {
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  /* Style pour le conteneur de notification */
+  .notification {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  /* Style pour les contrôles en haut */
+  .top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Style pour les boutons de contrôle */
+  .button-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .add-service-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 15px 30px; /* Augmenter la taille du bouton */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px; /* Augmenter la taille du texte */
+    margin-right: 10px;
+  }
+  
+  .add-service-button:disabled {
+    background-color: #d6d6d6;
+    cursor: not-allowed;
+  }
+  
+  /* Style pour le champ de recherche et bouton */
+  .search-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-container input {
+    padding: 10px; /* Augmenter le padding pour un champ plus grand */
+    font-size: 18px; /* Augmenter la taille du texte */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 250px; /* Augmenter la largeur du champ de recherche */
+  }
+  
+  .search-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 15px; /* Augmenter le padding pour un bouton plus grand */
+    border-radius: 5px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 18px; /* Augmenter la taille du texte */
+  }
+  
+  /* Style pour les cartes de services */
+  .card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between; /* Assurer que les cartes sont espacées correctement */
+  }
+  
+  /* Style pour chaque carte */
+  .card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 70px; /* Augmenter le padding pour plus de contenu */
+    width: calc(50% - 20px); /* Ajuster la largeur des cartes pour les rendre plus grandes */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    min-height: 200px; /* Augmenter la hauteur minimale pour les cartes */
+  }
+  
+  .card h3 {
+    margin-top: 0;
+    font-size: 15px; /* Augmenter la taille du texte */
+    color: #333;
+  }
+  
+  .card p {
+    margin: 15px 0; /* Augmenter les marges pour un espacement plus grand */
+    color: #555;
+  }
+  
+  .card .service-card-actions {
+    margin-top: 15px; /* Augmenter la marge pour plus d'espace */
+    text-align: right;
+  }
+  
+  .card .service-card-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px; /* Augmenter la taille des icônes */
+    color: #007bff;
+    margin-left: 15px; /* Augmenter l'espace entre les boutons */
+  }
+  
+  .card .service-card-actions button:hover {
+    color: #0056b3;
+  }
+  
+  /* Style pour les modals */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    padding: 30px; /* Augmenter le padding pour un contenu plus spacieux */
+    border-radius: 5px;
+    width: 600px; /* Augmenter la largeur de la modal */
+    max-width: 90%;
+    position: relative;
+  }
+  
+  .modal-content h2 {
+    margin-top: 0;
+    font-size: 26px; /* Augmenter la taille du titre */
+    color: #333;
+  }
+  
+  .modal-content label {
+    display: block;
+    margin-bottom: 15px; /* Augmenter l'espace entre les labels */
+  }
+  
+  .modal-content input {
+    width: 100%;
+    padding: 15px; /* Augmenter le padding pour plus de confort */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 18px; /* Augmenter la taille du texte */
+  }
+  
+  .modal-content button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 15px 30px; /* Augmenter le padding pour un bouton plus grand */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px; /* Augmenter la taille du texte */
+    margin-right: 15px; /* Augmenter l'espace entre les boutons */
+  }
+  
+  .modal-content button.cancel {
+    background-color: #6c757d;
+  }
+  
+  .modal-content button:hover {
+    background-color: #0056b3;
+  }
+  
+  .modal-content button.cancel:hover {
+    background-color: #5a6268;
+  }
+  
+  /* Style pour le bouton de fermeture du modal */
+  .modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px; /* Augmenter la taille du bouton de fermeture */
+    cursor: pointer;
+    color: #333;
+  }
+  

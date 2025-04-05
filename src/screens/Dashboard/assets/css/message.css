@@ -1,0 +1,105 @@
+/* cc.css */
+
+/* Style pour le titre de la carte */
+.au-card-title {
+    background-color: #007bff; /* Couleur de fond du titre */
+    color: #fff; /* Couleur du texte */
+    padding: 15px;
+    border-radius: 8px 8px 0 0; /* Coins arrondis en haut */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+  
+  .au-card-title h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  .au-btn-plus {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    font-size: 20px;
+  }
+  
+  /* Style pour les cartes de message */
+  .au-message__item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+  }
+  
+  .au-message__item:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Style pour les actions des cartes */
+  .au-message__item-actions {
+    margin-top: 10px;
+  }
+  
+  .au-message__item-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #007bff;
+    font-size: 16px;
+    margin-right: 10px;
+  }
+  
+  .au-message__item-actions button:hover {
+    color: #0056b3;
+  }
+  
+  /* Style pour le modal */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .modal-content h2 {
+    margin-top: 0;
+  }
+  /* cc.css */
+
+/* Style pour le conteneur de filtrage */
+.filter-controls {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.filter-controls input[type="text"] {
+  padding: 8px;
+  margin-right: 10px;
+  flex: 1;
+}
+
+.filter-controls select {
+  padding: 8px;
+}
+
+  

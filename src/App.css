@@ -1,0 +1,141 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Styling for About Section */
+.about-section-padding {
+  padding: 60px 0;
+}
+
+/* Hero Area Styling */
+.about-single-slider {
+  height: 60vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-hero-cap h2 {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Our Vision Section */
+.about-section-tittle h2 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.about-section-tittle p {
+  font-size: 1rem;
+  color: #777;
+  margin-bottom: 30px;
+}
+
+.about-section-padding p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #555;
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+/* Our Values Section */
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+ul li {
+  font-size: 1.1rem;
+  margin: 15px 0;
+}
+
+ul li strong {
+  color: #3b50ce;
+}
+
+ul li:hover {
+  background-color: #f7f7f7;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+/* Support Company Section */
+.about-support-location-img img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.about-post-btn {
+  background-color: #0b1c39;
+  color: #fff;
+  padding: 12px 30px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.about-post-btn:hover {
+  background-color: #3b50ce;
+  text-decoration: none;
+}
+
+/* Footer Styling */
+footer {
+  background-color: #f7f7f7;
+  padding: 30px 0;
+  text-align: center;
+  color: #777;
+}
+
+
+.apply-button {
+  
+  margin-left: 700px;
+}
+
+
+
+
