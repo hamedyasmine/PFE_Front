@@ -2,22 +2,90 @@ import React, { useState, useEffect } from "react";
 import Pagination from "./Pagination";
 import { Link } from "react-router-dom";
 
-function ListeJob() {
+function ListeJob({ selectedCategory, selectedJobTypes, selectedLocation, selectedPostPeriod }) {
   const [jobs, setJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const jobsPerPage = 2;
-
+  
   useEffect(() => {
+    console.log("Filtres sélectionnés:");
+    console.log("- Catégorie:", selectedCategory);
+    console.log("- Types d'emploi:", selectedJobTypes);
+    console.log("- Localisation:", selectedLocation);
+    console.log("- Période:", selectedPostPeriod);
+    
+    console.log("selectedJobTypes:", selectedJobTypes, 
+      "Type:", typeof selectedJobTypes, 
+      "Est un tableau:", Array.isArray(selectedJobTypes),
+      "Longueur:", selectedJobTypes?.length);
+    
     const fetchJobs = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/jobs');
+        // Construire l'URL avec les paramètres de filtrage
+        let url = 'http://localhost:5000/api/jobs';
+        const params = new URLSearchParams();
+        
+        // Ajouter les filtres sélectionnés à l'URL
+        if (selectedCategory) {
+          params.append('category', selectedCategory);
+        }
+        
+        // Ajouter les types d'emploi sélectionnés
+        if (selectedJobTypes && selectedJobTypes.length > 0) {
+          // Vérifier la structure des objets dans selectedJobTypes
+          console.log("Structure des objets jobType:", selectedJobTypes);
+          
+          // S'assurer que nous avons accès à la propriété 'label'
+          const jobTypeLabels = selectedJobTypes.map(type => {
+            // Si c'est un objet avec une propriété label
+            if (type && typeof type === 'object' && type.label) {
+              return type.label;
+            }
+            // Si c'est directement une chaîne de caractères
+            else if (typeof type === 'string') {
+              return type;
+            }
+            // Dans le doute, convertir en chaîne
+            return String(type);
+          }).join(',');
+          
+          console.log("jobType à envoyer:", jobTypeLabels);
+          params.append('jobType', jobTypeLabels);
+        }
+        
+        // Ajouter la localisation sélectionnée
+        if (selectedLocation) {
+          params.append('location', selectedLocation);
+        }
+        
+        // Ajouter la période de publication sélectionnée
+        if (selectedPostPeriod && selectedPostPeriod.length > 0) {
+          // Obtenir la valeur maximale (filtre le plus inclusif)
+          const maxDays = Math.max(...selectedPostPeriod);
+          if (maxDays > 0) {
+            params.append('postedWithin', maxDays.toString());
+            console.log("Filtre postedWithin appliqué:", maxDays, "jours");
+          }
+        }
+        
+        // Ajouter les paramètres à l'URL si nécessaire
+        const queryString = params.toString();
+        if (queryString) {
+          url += `?${queryString}`;
+        }
+        
+        console.log("URL de recherche:", url);
+        
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error("Erreur lors de la récupération des offres d'emploi");
         }
         const data = await response.json();
         setJobs(data);
+        // Réinitialiser à la première page quand les filtres changent
+        setCurrentPage(1);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -26,8 +94,8 @@ function ListeJob() {
     };
 
     fetchJobs();
-  }, []);
-
+  }, [selectedCategory, selectedJobTypes, selectedLocation, selectedPostPeriod]);
+   
   // Fonction pour calculer la différence de temps
   const timeAgo = (date) => {
     const now = new Date();

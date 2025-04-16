@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import Sidebar from './Sidebar';
 
 const styles = {
   container: {
-    width: '80%',
+    width: '60%',
     margin: 'auto',
     padding: '20px',
-    background: '#fff',
+    background: '#f9f9f9',
     borderRadius: '10px',
     boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
     textAlign: 'center'
   },
   title: {
-    color: '#007bff'
+    color: '#0d47a1'
   },
   notification: {
     padding: '10px',
@@ -23,9 +24,9 @@ const styles = {
   },
   form: {
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: 'space-between', // Espace entre les éléments
     alignItems: 'center',
-    gap: '10px',
+    gap: '20px', // Ajout d'un écart plus grand entre les éléments
     marginBottom: '20px'
   },
   input: {
@@ -36,7 +37,7 @@ const styles = {
   },
   addButton: {
     padding: '10px',
-    background: '#1E90FF',
+    background: '#0d47a1',
     color: 'white',
     border: 'none',
     cursor: 'pointer',
@@ -50,19 +51,19 @@ const styles = {
   headerCell: {
     padding: '12px',
     textAlign: 'left',
-    background: '#007bff',
+    background: '#0d47a1',
     color: 'white',
     borderBottom: '1px solid #ddd'
   },
   cell: {
     padding: '12px',
-    background: 'white',
+    background: '#f9f9f9',
     borderBottom: '1px solid #ddd'
   },
   deleteButton: {
     padding: '8px 12px',
-    marginRight: '5px',
-    background: '#0000FF',
+    marginRight: '10px', // Ajout d'un espacement à droite
+    background: '#FF0000',
     color: 'white',
     border: 'none',
     cursor: 'pointer',
@@ -70,7 +71,8 @@ const styles = {
   },
   editButton: {
     padding: '8px 12px',
-    background: '#0000FF',
+    background: '#0d47a1',
+    marginRight: '5px', // Ajout d'un espacement à gauche
     color: 'white',
     border: 'none',
     cursor: 'pointer',
@@ -147,6 +149,8 @@ function NumberPage() {
   };
 
   return (
+    <>
+    <Sidebar />
     <div style={styles.container}>
       <h1 style={styles.title}>Gestion des Compteurs</h1>
       {notification && <div style={styles.notification}>{notification}</div>}
@@ -179,7 +183,7 @@ function NumberPage() {
                 <td style={styles.cell}>{count.label}</td>
                 <td style={styles.cell}>{count.value}</td>
                 <td style={styles.cell}>
-                  <button style={styles.editButton} onClick={() => handleAlertEdit(count) }>Modifier</button>
+                  <button style={styles.editButton} onClick={() => handleAlertEdit(count)}>Modifier</button>
                   <button style={styles.deleteButton} onClick={() => handleDeleteCount(count._id)}>Supprimer</button>
                 </td>
               </tr>
@@ -188,6 +192,7 @@ function NumberPage() {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 

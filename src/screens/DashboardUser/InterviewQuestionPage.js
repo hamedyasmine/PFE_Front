@@ -3,18 +3,42 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 
 const InterviewQuestionsPage = () => {
-  const { applicationId } = useParams(); // Récupérer l'ID de la candidature
+  const { applicationId } = useParams();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [answers, setAnswers] = useState({}); // Stocker les réponses des utilisateurs
+  const [answers, setAnswers] = useState({});
+  const [timers, setTimers] = useState({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+  // ✅ Fonction corrigée : gestion correcte du timer
+  const startTimer = (index, duration) => {
+    setTimers((prevTimers) => ({
+      ...prevTimers,
+      [index]: duration,
+    }));
+
+    const timerInterval = setInterval(() => {
+      setTimers((prevTimers) => {
+        const current = prevTimers[index];
+        if (current <= 1) {
+          clearInterval(timerInterval);
+          return { ...prevTimers, [index]: 0 };
+        } else {
+          return { ...prevTimers, [index]: current - 1 };
+        }
+      });
+    }, 1000);
+  };
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/questions/applications/${applicationId}/questions`);
-        console.log("Questions reçues :", response.data);
+        const response = await axios.get(
+          `http://localhost:5000/api/questions/applications/${applicationId}/questions`
+        );
         setQuestions(response.data);
+        startTimer(0, response.data[0].tempsDeReponse);
       } catch (error) {
         console.error("Erreur lors de la récupération des questions :", error);
         setError("Erreur lors de la récupération des questions.");
@@ -27,37 +51,51 @@ const InterviewQuestionsPage = () => {
   }, [applicationId]);
 
   const handleInputChange = (event, index) => {
-    setAnswers({
-      ...answers,
-      [index]: event.target.value,
-    });
+    if (timers[index] > 0) {
+      setAnswers({
+        ...answers,
+        [index]: event.target.value,
+      });
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    // Vérification des données envoyées avant l'envoi
-    console.log("Réponses envoyées : ", answers);
-    const token = localStorage.getItem('authToken');
-
     try {
+      console.log("➡️ Envoi des réponses...");
       const response = await axios.post(
         `http://localhost:5000/api/questions/applications/${applicationId}/submit-answers`,
         { answers }
       );
-      console.log("Réponse du serveur : ", response.data); // Log de la réponse du serveur
-      alert("Réponses soumises avec succès!");
+      console.log("✅ Réponses soumises :", response.data);
+  
+      console.log("➡️ Marquage entretien comme passé...");
+      const markResponse = await axios.put(
+        `http://localhost:5000/api/questions/applications/${applicationId}/markInterviewPassed`
+      );
+      console.log("✅ Entretien marqué :", markResponse.data);
+  
+      alert("Réponses soumises avec succès !");
     } catch (error) {
-      console.error("Erreur lors de l'envoi des réponses :", error.response || error);
-      // Vérification des erreurs
-      if (error.response) {
-        // Si la réponse du serveur est présente
-        alert(`Erreur: ${error.response.data.message || error.response.statusText}`);
-      } else {
-        alert("Erreur lors de la soumission des réponses.");
-      }
+      console.error("❌ Erreur :", error.response?.data || error.message || error);
+      alert("Erreur lors de la soumission : " + (error.response?.data?.message || error.message));
     }
   };
+  
+  
+
+  // ✅ Mise à jour propre du passage à la question suivante
+  useEffect(() => {
+    if (
+      questions.length > 0 &&
+      timers[currentQuestionIndex] === 0 &&
+      currentQuestionIndex < questions.length - 1
+    ) {
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      startTimer(nextIndex, questions[nextIndex].tempsDeReponse);
+    }
+  }, [timers, currentQuestionIndex, questions]);
 
   const containerStyle = {
     width: '80%',
@@ -142,9 +180,16 @@ const InterviewQuestionsPage = () => {
         <form onSubmit={handleSubmit}>
           <div style={questionsContainerStyle}>
             {questions.map((question, index) => (
-              <div key={index} style={questionCardStyle}>
+              <div
+                key={index}
+                style={{
+                  ...questionCardStyle,
+                  display: index === currentQuestionIndex ? 'block' : 'none',
+                }}
+              >
                 <div style={questionStyle}>
-                  <h3>{question}</h3>
+                  <h3>{question.question}</h3>
+                  <p>Temps restant : {timers[index]} secondes</p>
                 </div>
                 <div style={answerContainerStyle}>
                   <textarea
@@ -153,17 +198,21 @@ const InterviewQuestionsPage = () => {
                     placeholder="Votre réponse..."
                     value={answers[index] || ""}
                     onChange={(e) => handleInputChange(e, index)}
+                    disabled={timers[index] <= 0}
                   />
                 </div>
               </div>
             ))}
           </div>
 
-          <div style={submitButtonContainerStyle}>
-            <button type="submit" style={submitButtonStyle}>
-              Soumettre mes réponses
-            </button>
-          </div>
+          {currentQuestionIndex === questions.length - 1 &&
+            timers[currentQuestionIndex] === 0 && (
+              <div style={submitButtonContainerStyle}>
+                <button type="submit" style={submitButtonStyle}>
+                  Soumettre mes réponses
+                </button>
+              </div>
+            )}
         </form>
       )}
     </div>

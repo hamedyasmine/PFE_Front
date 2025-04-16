@@ -7,8 +7,9 @@ function JobType({ onSelectionChange }) {
   useEffect(() => {
     // Simuler une requête API pour récupérer les types de jobs
     const fetchJobTypes = async () => {
+      
       const dummyJobTypes = [
-        { id: 1, label: "Full Time", checked: false },
+        { id: 1, label: "Full-time", checked: false },
         { id: 2, label: "Internship", checked: false },
         { id: 3, label: "Freelance", checked: false },
       ];

@@ -1,25 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-
-
-
 
 const JobsPage = () => {
   const { categoryId } = useParams();
   const [jobs, setJobs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
   const navigate = useNavigate();
-  const [newJob, setNewJob] = useState({
-    name: '',
-    location: '',
-    jobType: 'Full-time',
-    description: '',
-    duration: '',
-    category: categoryId
-  });
 
-  // Pour récupérer la liste des jobs de la catégorie
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -33,108 +22,28 @@ const JobsPage = () => {
     fetchJobs();
   }, [categoryId]);
 
-  // Fonction pour ajouter un job
-  const handleAddJob = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:5000/api/jobs', {
-        ...newJob,
-        category: categoryId // Assurer que la catégorie est correcte
-      });
-
-      setJobs([...jobs, response.data]); // Ajout du job à la liste
-      setNewJob({ name: '', location: '', jobType: 'Full-time', description: '', duration: '' }); // Réinitialiser le formulaire
-    } catch (error) {
-      console.error("Erreur lors de l'ajout du job", error);
-    }
-  };
-
-  // Fonction pour supprimer un job
   const handleDeleteJob = async (jobId) => {
     try {
       await axios.delete(`http://localhost:5000/api/jobs/${jobId}`);
-      setJobs(jobs.filter(job => job._id !== jobId)); // Filtrer le job supprimé
+      setJobs(jobs.filter(job => job._id !== jobId));
     } catch (error) {
       console.error("Erreur lors de la suppression du job", error);
     }
   };
 
+  const displayedJobs = jobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(jobs.length / itemsPerPage);
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Jobs de la catégorie</h1>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Jobs de la catégorie</h1>
+        <button style={styles.addJobButton} onClick={() => navigate(`/category/${categoryId}/add-job`)}>
+          + Ajouter un Job
+        </button>
+      </div>
 
-      {/* Formulaire d'ajout de job */}
-      <form onSubmit={handleAddJob} style={styles.form}>
-        <div style={styles.formGroup}>
-          <label htmlFor="name" style={styles.label}>Titre du job</label>
-          <input
-            id="name"
-            type="text"
-            placeholder="Titre du job"
-            value={newJob.name}
-            onChange={(e) => setNewJob({ ...newJob, name: e.target.value })}
-            required
-            style={styles.input}
-          />
-        </div>
-
-        <div style={styles.formGroup}>
-          <label htmlFor="location" style={styles.label}>Localisation</label>
-          <input
-            id="location"
-            type="text"
-            placeholder="Localisation"
-            value={newJob.location}
-            onChange={(e) => setNewJob({ ...newJob, location: e.target.value })}
-            required
-            style={styles.input}
-          />
-        </div>
-
-        <div style={styles.formGroup}>
-          <label htmlFor="jobType" style={styles.label}>Type de job</label>
-          <select
-            id="jobType"
-            value={newJob.jobType}
-            onChange={(e) => setNewJob({ ...newJob, jobType: e.target.value })}
-            style={styles.input}
-            required
-          >
-            <option value="Full-time">Full-time</option>
-            <option value="Part-time">Part-time</option>
-            <option value="Freelance">Freelance</option>
-          </select>
-        </div>
-
-        <div style={styles.formGroup}>
-          <label htmlFor="description" style={styles.label}>Description</label>
-          <textarea
-            id="description"
-            placeholder="Description"
-            value={newJob.description}
-            onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
-            required
-            style={styles.textarea}
-          />
-        </div>
-
-        <div style={styles.formGroup}>
-          <label htmlFor="duration" style={styles.label}>Durée (en heures)</label>
-          <input
-            id="duration"
-            type="number"
-            placeholder="Durée en heures"
-            value={newJob.duration}
-            onChange={(e) => setNewJob({ ...newJob, duration: e.target.value })}
-            required
-            style={styles.input}
-          />
-        </div>
-
-        <button type="submit" style={styles.addButton}>Ajouter Job</button>
-      </form>
-
-      {/* Affichage des jobs existants */}
       <table style={styles.table}>
         <thead>
           <tr>
@@ -147,108 +56,114 @@ const JobsPage = () => {
           </tr>
         </thead>
         <tbody>
-          {jobs.map((job) => (
+          {displayedJobs.map((job) => (
             <tr key={job._id}>
               <td style={styles.cell}>{job.name}</td>
               <td style={styles.cell}>{job.location}</td>
               <td style={styles.cell}>{job.jobType}</td>
               <td style={styles.cell}>{job.description}</td>
-              <td style={styles.cell}>{job.duration} heures</td>
+              <td style={styles.cell}>{job.duration} h</td>
               <td style={styles.cell}>
                 <button style={styles.deleteButton} onClick={() => handleDeleteJob(job._id)}>Supprimer</button>
                 <button style={styles.viewButton} onClick={() => navigate(`/job/${job._id}/applications`)}>
-  Consulter les candidatures
-</button>
-
+                  Voir candidatures
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* Pagination */}
+      <div style={styles.pagination}>
+        {pageNumbers.map((number) => (
+          <button
+            key={number}
+            onClick={() => setCurrentPage(number)}
+            style={{
+              ...styles.pageButton,
+              backgroundColor: currentPage === number ? '#0d47a1' : '#e0e0e0',
+              color: currentPage === number ? 'white' : '#333',
+            }}
+          >
+            {number}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
 
-// Styles en JSX
 const styles = {
   container: {
-    width: '80%',
-    margin: 'auto',
+    width: '85%',
+    margin: '40px auto',
+    background: '#f9f9f9',
     padding: '20px',
-    background: '#fff',
-    borderRadius: '10px',
-    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
-    textAlign: 'center'
+    borderRadius: '12px',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px'
   },
   title: {
-    color: '#007bff'
+    fontSize: '24px',
+    color: '#0d47a1'
   },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '15px',
-    marginBottom: '20px',
-    padding: '10px'
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start'
-  },
-  label: {
-    fontWeight: 'bold',
-    marginBottom: '5px',
-    fontSize: '14px'
-  },
-  input: {
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    width: '100%',
-    maxWidth: '400px'
-  },
-  textarea: {
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    width: '100%',
-    maxWidth: '400px',
-    height: '100px'
-  },
-  addButton: {
-    padding: '10px',
-    background: '#28a745',
-    color: 'white',
+  addJobButton: {
+    padding: '10px 20px',
+    background: '#0d47a1',
+    color: '#fff',
     border: 'none',
+    borderRadius: '8px',
     cursor: 'pointer',
-    borderRadius: '5px',
-    maxWidth: '200px',
-    alignSelf: 'center'
+    fontWeight: 'bold'
   },
   table: {
     width: '100%',
-    borderCollapse: 'collapse',
-    marginTop: '20px'
+    borderCollapse: 'collapse'
   },
   headerCell: {
-    padding: '12px',
-    textAlign: 'left',
-    background: '#007bff',
+    backgroundColor: '#1565c0',
     color: 'white',
-    borderBottom: '1px solid #ddd'
+    padding: '10px',
+    textAlign: 'left',
+    fontWeight: 'bold'
   },
   cell: {
     padding: '12px',
-    background: 'white',
     borderBottom: '1px solid #ddd'
   },
   deleteButton: {
-    padding: '8px 12px',
-    background: '#dc3545',
-    color: 'white',
+    background: '#e53935',
+    color: '#fff',
+    padding: '8px',
     border: 'none',
-    cursor: 'pointer',
+    borderRadius: '5px',
+    marginRight: '8px'
+  },
+  viewButton: {
+    background: '#0d47a1', // bouton bleu
+    color: '#fff',
+    padding: '8px',
+    border: 'none',
     borderRadius: '5px'
+  },
+  pagination: {
+    marginTop: '20px',
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '10px'
+  },
+  pageButton: {
+    padding: '8px 12px',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontWeight: 'bold'
   }
 };
 

@@ -17,7 +17,7 @@ function Header() {
               {/* Logo */}
               <div className="col-lg-3 col-md-2">
                 <div className="logo">
-                  <a href="index.html">
+                  <a href="/">
                     <img src="assets/img/logo/logo.png" alt="" />
                   </a>
                 </div>

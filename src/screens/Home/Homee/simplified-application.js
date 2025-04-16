@@ -14,31 +14,21 @@ function SimplifiedApplication() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    setFormData({
-      ...formData,
-      cv: file,
-    });
+    setFormData({ ...formData, cv: file });
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     const formDataToSend = new FormData();
-    formDataToSend.append("firstName", formData.firstName);
-    formDataToSend.append("lastName", formData.lastName);
-    formDataToSend.append("email", formData.email);
-    formDataToSend.append("category", formData.category);
-    formDataToSend.append("jobType", formData.jobType);
-    formDataToSend.append("gender", formData.gender);
-    formDataToSend.append("cv", formData.cv);
+    Object.entries(formData).forEach(([key, value]) =>
+      formDataToSend.append(key, value)
+    );
 
     try {
       const response = await fetch("http://localhost:5000/api/applications-simplifiees/apply", {
@@ -63,120 +53,141 @@ function SimplifiedApplication() {
       <Header />
       <section
         style={{
-          backgroundImage:
-            "url('https://st2.depositphotos.com/3894705/7745/i/450/depositphotos_77458360-stock-photo-grunge-background-of-dark-blue.jpg')",
-          backgroundSize: "cover",
+          backgroundColor: "#f6f9fc",
           minHeight: "100vh",
-          padding: "50px 0",
+          padding: "60px 20px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-          <div style={{ maxWidth: "700px", width: "100%", padding: "30px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "0px 4px 10px rgba(0,0,0,0.1)" }}>
-            <h2 style={{ textAlign: "center", marginBottom: "20px", color: "#0b1c39" }}>Simplified Application</h2>
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontWeight: "bold" }}>First Name</label>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "700px",
+            backgroundColor: "#ffffff",
+            padding: "40px",
+            borderRadius: "16px",
+            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.08)",
+          }}
+        >
+          <h2 style={{ textAlign: "center", marginBottom: "30px", color: "#0b1c39" }}>
+            Simplified Application
+          </h2>
+
+          <form onSubmit={handleSubmit}>
+            {[
+              { label: "First Name", name: "firstName", type: "text" },
+              { label: "Last Name", name: "lastName", type: "text" },
+              { label: "Email", name: "email", type: "email" },
+            ].map(({ label, name, type }) => (
+              <div key={name} style={{ marginBottom: "20px" }}>
+                <label style={{ fontWeight: "600", marginBottom: "5px", display: "block" }}>
+                  {label}
+                </label>
                 <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
+                  type={type}
+                  name={name}
+                  value={formData[name]}
                   onChange={handleChange}
-                  style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
                   required
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    fontSize: "15px",
+                  }}
                 />
               </div>
+            ))}
 
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontWeight: "bold" }}>Last Name</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-                  required
-                />
-              </div>
-
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontWeight: "bold" }}>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-                  required
-                />
-              </div>
-
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontWeight: "bold" }}>Category</label>
+            {[
+              {
+                label: "Category",
+                name: "category",
+                options: ["Informatique", "Marketing", "Finance"],
+              },
+              {
+                label: "Job Type",
+                name: "jobType",
+                options: ["Full-time", "Part-time", "Internship"],
+              },
+              {
+                label: "Gender",
+                name: "gender",
+                options: ["Male", "Female", "Other"],
+              },
+            ].map(({ label, name, options }) => (
+              <div key={name} style={{ marginBottom: "20px" }}>
+                <label style={{ fontWeight: "600", marginBottom: "5px", display: "block" }}>
+                  {label}
+                </label>
                 <select
-                  name="category"
-                  value={formData.category}
+                  name={name}
+                  value={formData[name]}
                   onChange={handleChange}
-                  style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
                   required
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    fontSize: "15px",
+                    backgroundColor: "#fff",
+                  }}
                 >
-                  <option value="">Select Category</option>
-                  <option value="Informatique">Informatique</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Finance">Finance</option>
+                  <option value="">Select {label}</option>
+                  {options.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
                 </select>
               </div>
+            ))}
 
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontWeight: "bold" }}>Job Type</label>
-                <select
-                  name="jobType"
-                  value={formData.jobType}
-                  onChange={handleChange}
-                  style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-                  required
-                >
-                  <option value="">Select Job Type</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Internship">Internship</option>
-                </select>
-              </div>
+            <div style={{ marginBottom: "25px" }}>
+              <label style={{ fontWeight: "600", marginBottom: "5px", display: "block" }}>
+                Upload CV
+              </label>
+              <input
+                type="file"
+                name="cv"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileChange}
+                required
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                  fontSize: "15px",
+                }}
+              />
+            </div>
 
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontWeight: "bold" }}>Gender</label>
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleChange}
-                  style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-                  required
-                >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontWeight: "bold" }}>Upload CV</label>
-                <input
-                  type="file"
-                  name="cv"
-                  accept=".pdf, .doc, .docx"
-                  onChange={handleFileChange}
-                  style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-                  required
-                />
-              </div>
-
-              <div style={{ textAlign: "center" }}>
-                <button type="submit" style={{ backgroundColor: "#0b1c39", color: "white", padding: "10px 20px", borderRadius: "5px", border: "none", cursor: "pointer" }}>
-                  Submit Application
-                </button>
-              </div>
-            </form>
-          </div>
+            <div style={{ textAlign: "center" }}>
+              <button
+                type="submit"
+                style={{
+                  backgroundColor: "#0b1c39",
+                  color: "white",
+                  padding: "12px 25px",
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  transition: "background 0.3s ease",
+                }}
+                onMouseOver={(e) => (e.target.style.backgroundColor = "#142850")}
+                onMouseOut={(e) => (e.target.style.backgroundColor = "#0b1c39")}
+              >
+                Submit Application
+              </button>
+            </div>
+          </form>
         </div>
       </section>
     </>

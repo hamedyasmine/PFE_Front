@@ -1,44 +1,62 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom"; // Importer Link pour gérer la navigation
+import React from "react";
+import { Link } from "react-router-dom";
 
 function UploadCv() {
-  const [title, setTitle] = useState("Candidature Simplifiée");
-  const [description, setDescription] = useState("Postulez facilement avec votre CV en ligne !");
-  
-  useEffect(() => {
-    // Logique de récupération des données si nécessaire
-  }, []);
-
   return (
     <div
-  className="online-cv cv-bg section-overly pt-90 pb-120"
-  style={{
-    backgroundImage: "url('/assets/img/gallery/cv_bg.jpg')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-  <div className="container">
-    <div className="row justify-content-center">
-      <div className="col-xl-10">
-        {/* Titre et description avec les couleurs spécifiées */}
-        <div className="text-center">
-          <h2 style={{ color: "#0b1c39" }}>Candidature Simplifiée</h2> {/* Candidature Simplifiée en rose */}
-          <p style={{ color: "#0b1c39" }}>Postulez facilement avec votre CV en ligne !</p> {/* Description en bleu */}
-        </div>
+      className="online-cv section-overly pt-90 pb-120"
+      style={{
+        backgroundImage: "url('/assets/img/gallery/how-applybg.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        minHeight: "60vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div className="container">
+        <div className="row justify-content-center">
+          <div
+            className="col-xl-10 text-center"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              padding: "40px",
+              borderRadius: "20px",
+              boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <h2 style={{ color: "#0b1c39", fontWeight: "700", fontSize: "2.2rem" }}>
+              Candidature Simplifiée
+            </h2>
+            <p style={{ color: "#0b1c39", fontSize: "1.1rem", marginTop: "10px" }}>
+              Postulez facilement avec votre CV en ligne !
+            </p>
 
-        {/* Bouton de redirection avec le même design */}
-        <div className="browse-btn2 text-center mt-50">
-          <Link to="/simplified-application" className="border-btn2">
-            Candidature Simplifiée
-          </Link>
+            <div className="text-center mt-4">
+              <Link
+                to="/simplified-application"
+                style={{
+                  backgroundColor: "#0b1c39",
+                  color: "#fff",
+                  padding: "12px 30px",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                  fontWeight: "600",
+                  fontSize: "1rem",
+                  transition: "background-color 0.3s ease",
+                }}
+                onMouseEnter={(e) => (e.target.style.backgroundColor = "#142e66")}
+                onMouseLeave={(e) => (e.target.style.backgroundColor = "#0b1c39")}
+              >
+                Commencer ma candidature
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-
   );
 }
 

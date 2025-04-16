@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Sidebar from './Sidebar';
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [notification, setNotification] = useState('');
+  const itemsPerPage = 4;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,12 +27,12 @@ const CategoriesPage = () => {
   const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!newCategory) return;
-
     try {
-      await axios.post('http://localhost:5000/api/categories', { name: newCategory });
+      const response = await axios.post('http://localhost:5000/api/categories', { name: newCategory });
       setNotification('Catégorie ajoutée avec succès !');
+      setCategories(prev => [...prev, response.data]);
       setNewCategory('');
-      fetchCategories();
+      setCurrentPage(Math.ceil((categories.length + 1) / itemsPerPage)); // aller à la dernière page
     } catch (error) {
       console.error("Erreur lors de l'ajout", error);
     }
@@ -38,20 +41,30 @@ const CategoriesPage = () => {
   const handleDeleteCategory = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/categories/${id}`);
+      const updated = categories.filter(c => c._id !== id);
+      setCategories(updated);
       setNotification('Catégorie supprimée');
-      fetchCategories();
+      const newPage = Math.max(1, Math.ceil(updated.length / itemsPerPage));
+      setCurrentPage(prev => Math.min(prev, newPage));
     } catch (error) {
       console.error("Erreur lors de la suppression", error);
     }
   };
 
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
+  const displayedCategories = categories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
+    <>
+    <Sidebar/>
     <div style={styles.container}>
       <h1 style={styles.title}>Gestion des Catégories</h1>
 
       {notification && <div style={styles.notification}>{notification}</div>}
 
-      {/* Formulaire d'ajout */}
       <form style={styles.form} onSubmit={handleAddCategory}>
         <input
           type="text"
@@ -64,7 +77,6 @@ const CategoriesPage = () => {
         <button type="submit" style={styles.addButton}>Ajouter</button>
       </form>
 
-      {/* Liste des catégories */}
       <table style={styles.table}>
         <thead>
           <tr>
@@ -73,7 +85,7 @@ const CategoriesPage = () => {
           </tr>
         </thead>
         <tbody>
-          {categories.map(category => (
+          {displayedCategories.map(category => (
             <tr key={category._id}>
               <td style={styles.cell}>{category.name}</td>
               <td style={styles.cell}>
@@ -88,23 +100,44 @@ const CategoriesPage = () => {
           ))}
         </tbody>
       </table>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={styles.pagination}>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              style={{
+                ...styles.pageButton,
+                backgroundColor: currentPage === i + 1 ? '#1565c0' : '#fff',
+                color: currentPage === i + 1 ? '#fff' : '#1565c0',
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
+    </>
   );
 };
 
-// 🎨 Styles en JSX
 const styles = {
   container: {
-    width: '80%',
-    margin: 'auto',
+    width: '50%',
+    margin: '40px auto',
+    background: '#f9f9f9',
     padding: '20px',
-    background: '#fff',
-    borderRadius: '10px',
-    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
-    textAlign: 'center'
+    borderRadius: '12px',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
   },
   title: {
-    color: '#007bff'
+    fontSize: '24px',
+    color: '#0d47a1',
+    textAlign: 'center',
+    marginBottom: '20px'
   },
   notification: {
     padding: '10px',
@@ -112,7 +145,8 @@ const styles = {
     color: '#155724',
     border: '1px solid #c3e6cb',
     borderRadius: '5px',
-    marginBottom: '10px'
+    marginBottom: '10px',
+    textAlign: 'center'
   },
   form: {
     display: 'flex',
@@ -123,51 +157,63 @@ const styles = {
   },
   input: {
     padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
+    border: '1px solid #ccc',
+    borderRadius: '6px',
     width: '250px'
   },
   addButton: {
-    padding: '10px',
-    background: '#1E90FF',
+    padding: '10px 20px',
+    background: '#0d47a1',
     color: 'white',
     border: 'none',
+    borderRadius: '8px',
     cursor: 'pointer',
-    borderRadius: '5px'
+    fontWeight: 'bold'
   },
   table: {
     width: '100%',
-    borderCollapse: 'collapse',
-    marginTop: '20px'
+    borderCollapse: 'collapse'
   },
   headerCell: {
     padding: '12px',
     textAlign: 'left',
-    background: '#007bff',
+    background: '#1565c0',
     color: 'white',
     borderBottom: '1px solid #ddd'
   },
   cell: {
     padding: '12px',
-    background: 'white',
     borderBottom: '1px solid #ddd'
   },
   deleteButton: {
     padding: '8px 12px',
     marginRight: '5px',
-    background: '#0000FF',
+    background: '#e53935',
     color: 'white',
     border: 'none',
-    cursor: 'pointer',
-    borderRadius: '5px'
+    borderRadius: '5px',
+    cursor: 'pointer'
   },
   viewButton: {
     padding: '8px 12px',
-    background: '#0000FF',
+    background: '#0d47a1',
     color: 'white',
     border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer'
+  },
+  pagination: {
+    marginTop: '20px',
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '8px'
+  },
+  pageButton: {
+    padding: '8px 12px',
+    border: '1px solid #1565c0',
+    borderRadius: '6px',
     cursor: 'pointer',
-    borderRadius: '5px'
+    fontWeight: 'bold'
   }
 };
 

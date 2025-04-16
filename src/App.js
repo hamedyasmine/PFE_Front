@@ -31,6 +31,8 @@ import JobApplicationsPage from './screens/Dashboard/screens/JobApplicationsPage
 import ManageQuestionsPage from './screens/Dashboard/screens/ManageQuestionsPage.js';
 import InterviewQuestionsPage from './screens/DashboardUser/InterviewQuestionPage.js';
 import ApplicationDetails from './screens/DashboardUser/ApplicationDetails.js';
+import AddJobPage from './screens/Dashboard/screens/AddJobPage.js';
+import GererLocations from './screens/Dashboard/screens/GererLocations.js';
 
 
 
@@ -70,7 +72,10 @@ function App() {
       <Route path="/questions/:applicationId" element={<InterviewQuestionsPage />} />
       <Route path="/ApplicationDetails/:id" element={<ApplicationDetails />} />
       
+      <Route path="/category/:categoryId/jobs" element={<JobsPage />} />
+      <Route path="/category/:categoryId/add-job" element={<AddJobPage />} />
       
+      <Route path="/gerer-locations" element={<GererLocations />} />
     
       </Routes>
     </Router>

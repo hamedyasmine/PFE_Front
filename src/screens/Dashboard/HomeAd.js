@@ -5,6 +5,7 @@ import './assets/images/bg-title-01.jpg';
 import './assets/images/bg-title-02.jpg';
 import './assets/images/icon/Untitled-1.jpg'
 import p1 from './assets/images/icon/avatar-01.jpg';
+import Sidebar from "./screens/Sidebar";
 
 
 import { Link, useLocation } from 'react-router-dom';
@@ -15,46 +16,7 @@ function HomeAd(){
     return(
        <div className="page-wrapper">
  
-  <aside className="menu-sidebar d-none d-lg-block">
-   
-    <div className="menu-sidebar__content js-scrollbar1">
-      <nav className="navbar-sidebar">
-        <ul className="list-unstyled navbar__list">
-          <li className="active has-sub">
-            <a className="js-arrow" href="#">
-              <i className="fas fa-tachometer-alt" />Dashboard</a>
-       
-          </li>
-          <li>
-            <Link to="/number">
-              <i className="fas fa-chart-bar" />Number
-            </Link>
-          </li>
-          <li>
-          <Link to="/categories">
-            <i className="fas fa-table"></i> Categories
-          </Link>
-        </li>
-        <li>
-          <Link to="/candidaturesimplifier">
-            <i className="fas fa-table"></i> candidature simplifier
-          </Link>
-        </li>
-          
-          <li>
-            <Link to="/message">
-              <i className="fas fa-calendar-alt" />Message</Link>
-          </li>
-          <li>
-            <Link to="/map">
-              <i className="fas fa-map-marker-alt" />Infos</Link>
-          </li>
-      
-          
-        </ul>
-      </nav>
-    </div>
-  </aside>
+  <Sidebar/>
   {/* END MENU SIDEBAR*/}
   {/* PAGE CONTAINER*/}
   <div className="page-container">

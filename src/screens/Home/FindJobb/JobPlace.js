@@ -12,7 +12,7 @@ function JobPlace({ onLocationChange }) {
       try {
         const response = await axios.get("http://localhost:5000/api/places");
         const fetchedLocations = response.data.map((place) => ({
-          value: place._id,
+          value: place.name,
           label: place.name,
         }));
         setLocations(fetchedLocations);
