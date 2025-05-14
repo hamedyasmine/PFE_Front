@@ -1,693 +1,658 @@
+import React, { useState, useEffect, useMemo } from "react";
+import { Link } from 'react-router-dom';
+import axios from "axios";
+import { Bar, Pie, Line, Doughnut } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement,
+  RadialLinearScale
+} from 'chart.js';
 
-import React from "react";
-import './assets/css/theme.css';
-import './assets/images/bg-title-01.jpg';
-import './assets/images/bg-title-02.jpg';
-import './assets/images/icon/Untitled-1.jpg'
-import p1 from './assets/images/icon/avatar-01.jpg';
+// Composants
 import Sidebar from "./screens/Sidebar";
+import UserDropdownAdmin from "./screens/UserDropDown";
+
+// Styles
+import './assets/css/theme.css';
+
+// Images (import uniquement celles utilisées)
+import p1 from './assets/images/icon/avatar-01.jpg';
+
+// Enregistrer les composants Chart.js
+ChartJS.register(
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  ArcElement, 
+  PointElement, 
+  LineElement,
+  RadialLinearScale
+);
+
+// Couleurs du thème pour les graphiques
+const CHART_COLORS = {
+  primary: '#4B9CD3',
+  secondary: '#FF6384',
+  success: '#36A2EB',
+  warning: '#FFCE56',
+  info: '#4BC0C0',
+  danger: '#FF9F40',
+  light: '#E7E9ED',
+  dark: '#252525',
+  background: 'rgba(255, 255, 255, 0.8)',
+};
+
+// Configuration pour l'animation des graphiques
+const CHART_ANIMATIONS = {
+  duration: 1000,
+  easing: 'easeOutQuart',
+};
+
+// Constantes pour les URL d'API
+const API_BASE_URL = 'http://localhost:5000/api';
+const API_ENDPOINTS = {
+  APPLICATIONS_BY_STATUS: `${API_BASE_URL}/stats/applications-by-status`,
+  APPLICATIONS_SIMPLIFIED_BY_STATUS: `${API_BASE_URL}/stats/applications-simplifiee-by-status`,
+  TOTAL_APPLICATIONS: `${API_BASE_URL}/stats/total-applications`,
+  TOTAL_APPLICATIONS_SIMPLIFIED: `${API_BASE_URL}/stats/total-applicationssimplifiee`,
+  APPLICATIONS_BY_CATEGORY: `${API_BASE_URL}/stats/applications-by-category`,
+  APPLICATION_TYPE_RATIO: `${API_BASE_URL}/stats/application-type-ratio`,
+  TOP_JOBS: `${API_BASE_URL}/stats/top-jobs`,
+  ACCEPTANCE_RATE: `${API_BASE_URL}/stats/acceptance-rate`,
+  ACCEPTANCE_RATE_SIMPLIFIED: `${API_BASE_URL}/stats/acceptance-rate-simplifiee`,
+  MESSAGE_STATS: `${API_BASE_URL}/stats/message-stats`,
+  APPLICATIONS_BY_MONTH: `${API_BASE_URL}/stats/applications-by-month`,
+};
+
+// Utilitaires
+const formatStatusLabel = (status) => {
+  switch (status) {
+    case 'accepted':
+      return '✅ Acceptée';
+    case 'rejected':
+      return '❌ Refusée';
+    case 'pending':
+      return '⏳ En attente';
+    default:
+      return '❓ Inconnu';
+  }
+};
+
+// Composant StatCard pour afficher les statistiques simples
+const StatCard = ({ title, value, icon, color = 'blue-500' }) => (
+  <div className="p-4 bg-gray-100 rounded-lg shadow-sm flex flex-col gap-2 justify-between h-full">
+    <h3 className="text-gray-600 text-sm font-medium">{title}</h3>
+    <div className="flex items-center justify-between">
+      <div className="bg-white px-3 py-2 rounded-md shadow text-2xl font-bold">
+        {value}
+      </div>
+      <div className={`text-${color} text-3xl`}>
+        {icon}
+      </div>
+    </div>
+  </div>
+);
 
 
-import { Link, useLocation } from 'react-router-dom';
 
+// Composant ChartCard pour encapsuler les graphiques
+const ChartCard = ({ title, children, subtitle = null }) => (
+  <div className="p-4 bg-white rounded-xl shadow hover:shadow-lg transition-all">
+    <h2 className="text-lg font-semibold mb-2">{title}</h2>
+    {subtitle && <p className="text-sm text-gray-500 mb-4">{subtitle}</p>}
+    <div className="mt-2">
+      {children}
+    </div>
+  </div>
+);
 
+function HomeAd() {
+  // États pour les données
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState({
+    totalApps: 0,
+    totalAppsSimplified: 0,
+    appsByCategory: [],
+    typeRatio: { normal: 0, simplifiee: 0, total: 0, percentageSimplifiee: '0%' },
+    statusStats: [],
+    simplifiedStatusStats: [],
+    globalAcceptanceRate: null,
+    globalAcceptanceRateSimplifiee: null,
+    topJobs: [],
+    appsByMonth: [],
+    messageStats: {
+      totalMessages: 0,
+      importantMessages: 0,
+      importancePercentage: '0%',
+    }
+  });
 
-function HomeAd(){
-    return(
-       <div className="page-wrapper">
- 
-  <Sidebar/>
-  {/* END MENU SIDEBAR*/}
-  {/* PAGE CONTAINER*/}
-  <div className="page-container">
-    {/* HEADER DESKTOP*/}
-    <header className="header-desktop">
-      <div className="section__content section__content--p30">
-        <div className="container-fluid">
-          <div className="header-wrap">
-            <form className="form-header" action method="POST">
-              <input className="au-input au-input--xl" type="text" name="search" placeholder="Search for datas & reports..." />
-              <button className="au-btn--submit" type="submit">
-              
-                <i className="zmdi zmdi-search" />
-              </button>
-            </form>
-            <div className="header-button">
-              <div className="noti-wrap">
-                <div className="noti__item js-item-menu">
-                  <i className="zmdi zmdi-comment-more" />
-                  
-                  <span className="quantity">1</span>
-                  <div className="mess-dropdown js-dropdown">
-                    <div className="mess__title">
-                    
-                      <p>You have 2 news message</p>
-                    </div>
-                    <div className="mess__item">
-                      <div className="image img-cir img-40">
-                        <img src="images/icon/avatar-06.jpg" alt="Michelle Moreno" />
-                      </div>
-                      <div className="content">
-                        <h6>Michelle Moreno</h6>
-                        <p>Have sent a photo</p>
-                        <span className="time">3 min ago</span>
-                      </div>
-                    </div>
-                    <div className="mess__item">
-                      <div className="image img-cir img-40">
-                        <img src="images/icon/avatar-04.jpg" alt="Diane Myers" />
-                      </div>
-                      <div className="content">
-                        <h6>Diane Myers</h6>
-                        <p>You are now connected on message</p>
-                        <span className="time">Yesterday</span>
-                      </div>
-                    </div>
-                    <div className="mess__footer">
-                      <a href="#">View all messages</a>
-                    </div>
-                  </div>
-                </div>
-                <div className="noti__item js-item-menu">
-                  <i className="zmdi zmdi-email" />
-                  
-                  <span className="quantity">1</span>
-                  <div className="email-dropdown js-dropdown">
-                    <div className="email__title">
-                      <p>You have 3 New Emails</p>
-                    </div>
-                    <div className="email__item">
-                      <div className="image img-cir img-40">
-                        <img src="images/icon/avatar-06.jpg" alt="Cynthia Harvey" />
-                      </div>
-                      <div className="content">
-                        <p>Meeting about new dashboard...</p>
-                        <span>Cynthia Harvey, 3 min ago</span>
-                      </div>
-                    </div>
-                    <div className="email__item">
-                      <div className="image img-cir img-40">
-                        <img src="images/icon/avatar-05.jpg" alt="Cynthia Harvey" />
-                      </div>
-                      <div className="content">
-                        <p>Meeting about new dashboard...</p>
-                        <span>Cynthia Harvey, Yesterday</span>
-                      </div>
-                    </div>
-                    <div className="email__item">
-                      <div className="image img-cir img-40">
-                        <img src="images/icon/avatar-04.jpg" alt="Cynthia Harvey" />
-                      </div>
-                      <div className="content">
-                        <p>Meeting about new dashboard...</p>
-                        <span>Cynthia Harvey, April 12,,2018</span>
-                      </div>
-                    </div>
-                    <div className="email__footer">
-                      <a href="#">See all emails</a>
-                    </div>
-                  </div>
-                </div>
-                <div className="noti__item js-item-menu">
-                  <i className="zmdi zmdi-notifications" />
-                  
-                  <span className="quantity">3</span>
-                  <div className="notifi-dropdown js-dropdown">
-                    <div className="notifi__title">
-                      <p>You have 3 Notifications</p>
-                    </div>
-                    <div className="notifi__item">
-                      <div className="bg-c1 img-cir img-40">
-                        <i className="zmdi zmdi-email-open" />
-                      </div>
-                      <div className="content">
-                        <p>You got a email notification</p>
-                        <span className="date">April 12, 2018 06:50</span>
-                      </div>
-                    </div>
-                    <div className="notifi__item">
-                      <div className="bg-c2 img-cir img-40">
-                        <i className="zmdi zmdi-account-box" />
-                      </div>
-                      <div className="content">
-                        <p>Your account has been blocked</p>
-                        <span className="date">April 12, 2018 06:50</span>
-                      </div>
-                    </div>
-                    <div className="notifi__item">
-                      <div className="bg-c3 img-cir img-40">
-                        <i className="zmdi zmdi-file-text" />
-                      </div>
-                      <div className="content">
-                        <p>You got a new file</p>
-                        <span className="date">April 12, 2018 06:50</span>
-                      </div>
-                    </div>
-                    <div className="notifi__footer">
-                      <a href="#">All notifications</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="account-wrap">
-                <div className="account-item clearfix js-item-menu">
-                  <div className="image">
-                    <img src={p1} alt="John Doe" />
-                  </div>
-                  <div className="content">
-                    <a className="js-acc-btn" href="#">john doe</a>
-                    
-                    
-                  </div>
-                  
-                  <div className="account-dropdown js-dropdown">
-                 
-                  
-                    <div className="info clearfix">
-                      
-                      <div className="image">
-                        <a href="#">
-                          <img src="images/icon/avatar-01.jpg" alt="John Doe" />
-                        </a>
-                      </div>
-                      <div className="content">
-                        <h5 className="name">
-                          <a href="#">john doe</a>
-                        </h5>
-                        <span className="email">johndoe@example.com</span>
-                      </div>
-                    </div>
-                    <div className="account-dropdown__body">
-                      <div className="account-dropdown__item">
-                        <a href="#">
-                          <i className="zmdi zmdi-account" />Account</a>
-                      </div>
-                      <div className="account-dropdown__item">
-                        <a href="#">
-                          <i className="zmdi zmdi-settings" />Setting</a>
-                      </div>
-                      <div className="account-dropdown__item">
-                        <a href="#">
-                          <i className="zmdi zmdi-money-box" />Billing</a>
-                      </div>
-                    </div>
-                    <div className="account-dropdown__footer">
-                      <a href="#">
-                        <i className="zmdi zmdi-power" />Logout</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+  // Fetch data effect
+  useEffect(() => {
+    const fetchAllData = async () => {
+      setIsLoading(true);
+      try {
+        const [
+          statusRes, 
+          totalRes, 
+          totalSimplRes, 
+          catRes, 
+          ratioRes, 
+          topJobsRes, 
+          acceptanceRateSimplifieeRes, 
+          simplStatusRes, 
+          messageRes, 
+          monthRes, 
+          acceptanceRateRes
+        ] = await Promise.all([
+          axios.get(API_ENDPOINTS.APPLICATIONS_BY_STATUS),
+          axios.get(API_ENDPOINTS.TOTAL_APPLICATIONS),
+          axios.get(API_ENDPOINTS.TOTAL_APPLICATIONS_SIMPLIFIED),
+          axios.get(API_ENDPOINTS.APPLICATIONS_BY_CATEGORY),
+          axios.get(API_ENDPOINTS.APPLICATION_TYPE_RATIO),
+          axios.get(API_ENDPOINTS.TOP_JOBS),
+          axios.get(API_ENDPOINTS.ACCEPTANCE_RATE_SIMPLIFIED),
+          axios.get(API_ENDPOINTS.APPLICATIONS_SIMPLIFIED_BY_STATUS),
+          axios.get(API_ENDPOINTS.MESSAGE_STATS),
+          axios.get(API_ENDPOINTS.APPLICATIONS_BY_MONTH),
+          axios.get(API_ENDPOINTS.ACCEPTANCE_RATE)
+        ]);
+
+        setData({
+          totalApps: totalRes.data.total || 0,
+          totalAppsSimplified: totalSimplRes.data.total || 0,
+          appsByCategory: Array.isArray(catRes.data) ? catRes.data : [],
+          typeRatio: ratioRes.data,
+          statusStats: Array.isArray(statusRes.data) ? statusRes.data : [],
+          simplifiedStatusStats: Array.isArray(simplStatusRes.data) ? simplStatusRes.data : [],
+          globalAcceptanceRate: acceptanceRateRes.data.acceptanceRate,
+          globalAcceptanceRateSimplifiee: acceptanceRateSimplifieeRes.data.acceptanceRate,
+          topJobs: topJobsRes.data,
+          appsByMonth: Array.isArray(monthRes.data) ? monthRes.data : [],
+          messageStats: messageRes.data
+        });
+      } catch (err) {
+        console.error("Erreur lors du chargement des statistiques :", err);
+        setError("Impossible de charger les données. Veuillez réessayer plus tard.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, []);
+
+  // Préparation des données pour les graphiques (Memoized)
+  const chartData = useMemo(() => {
+    const { 
+      appsByCategory, 
+      statusStats, 
+      simplifiedStatusStats, 
+      messageStats, 
+      appsByMonth 
+    } = data;
+
+    // Données pour le graphique Pie des catégories
+    const categoryData = {
+      labels: appsByCategory.map(item => item?._id || 'Non catégorisé'),
+      datasets: [{
+        data: appsByCategory.map(item => item?.count || 0),
+        backgroundColor: [
+          CHART_COLORS.primary,
+          CHART_COLORS.secondary,
+          CHART_COLORS.success,
+          CHART_COLORS.warning,
+          CHART_COLORS.info,
+          CHART_COLORS.danger
+        ],
+        borderWidth: 1,
+        borderColor: CHART_COLORS.background,
+      }]
+    };
+
+    // Données pour le graphique Bar des statuts
+    const statusLabels = ['accepted', 'rejected', 'pending'];
+    const comparativeStatusData = {
+      labels: statusLabels.map(formatStatusLabel),
+      datasets: [
+        {
+          label: 'Candidatures standard',
+          data: statusLabels.map(
+            (status) => statusStats.find(s => s.status === status)?.count || 0
+          ),
+          backgroundColor: CHART_COLORS.primary,
+        },
+        {
+          label: 'Candidatures simplifiées',
+          data: statusLabels.map(
+            (status) => simplifiedStatusStats.find(s => s.status === status)?.count || 0
+          ),
+          backgroundColor: CHART_COLORS.secondary,
+        },
+      ],
+    };
+
+    // Données pour le graphique Pie des messages
+    const messageData = {
+      labels: ['Messages importants', 'Autres messages'],
+      datasets: [
+        {
+          data: [
+            messageStats.importantMessages,
+            messageStats.totalMessages - messageStats.importantMessages,
+          ],
+          backgroundColor: [CHART_COLORS.success, CHART_COLORS.light],
+          borderColor: CHART_COLORS.background,
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    // Données pour le graphique Line des candidatures par mois
+    const monthlyData = {
+      labels: appsByMonth.map(item => {
+        const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+        return item?._id ? monthNames[item._id - 1] || `Mois ${item._id}` : 'Inconnu';
+      }),
+      datasets: [{
+        label: 'Nombre de candidatures',
+        data: appsByMonth.map(item => item?.count || 0),
+        borderColor: CHART_COLORS.primary,
+        backgroundColor: `${CHART_COLORS.primary}33`,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: CHART_COLORS.primary,
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: CHART_COLORS.primary
+      }],
+    };
+
+    // Données pour le graphique Doughnut du ratio type de candidatures
+    const typeRatioData = {
+      labels: ['Standard', 'Simplifiée'],
+      datasets: [{
+        data: [data.typeRatio.normal, data.typeRatio.simplifiee],
+        backgroundColor: [CHART_COLORS.primary, CHART_COLORS.secondary],
+        borderColor: CHART_COLORS.background,
+        borderWidth: 1,
+      }]
+    };
+
+    return {
+      categoryData,
+      comparativeStatusData,
+      messageData,
+      monthlyData,
+      typeRatioData
+    };
+  }, [data]);
+
+  // Options communes pour les graphiques
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          boxWidth: 15,
+          usePointStyle: true,
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        titleFont: {
+          size: 13
+        },
+        bodyFont: {
+          size: 12
+        },
+        padding: 10,
+        cornerRadius: 4
+      }
+    },
+    animation: CHART_ANIMATIONS
+  };
+
+  // Si données en cours de chargement
+  if (isLoading) {
+    return (
+      <div className="page-wrapper flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement des données...</p>
         </div>
       </div>
-    </header>
-    {/* HEADER DESKTOP*/}
-    {/* MAIN CONTENT*/}
-    <div className="main-content">
-      <div className="section__content section__content--p30">
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col-md-12">
-              <div className="overview-wrap">
-                <h2 className="title-1">Numbers</h2>
-                <button className="au-btn au-btn-icon au-btn--blue">
-                  <i className="zmdi zmdi-plus" />add number</button>
-              </div>
-            </div>
-          </div>
-          <div className="row m-t-25">
-            <div className="col-sm-6 col-lg-3">
-              <div className="overview-item overview-item--c1">
-                <div className="overview__inner">
-                  <div className="overview-box clearfix">
-                    <div className="icon">
-                      <i className="zmdi zmdi-account-o" />
-                    </div>
-                    <div className="text">
-                      <h2>10368</h2>
-                      <span>members online</span>
-                    </div>
-                  </div>
-                  <div className="overview-chart">
-                    <canvas id="widgetChart1" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-sm-6 col-lg-3">
-              <div className="overview-item overview-item--c2">
-                <div className="overview__inner">
-                  <div className="overview-box clearfix">
-                    <div className="icon">
-                      <i className="zmdi zmdi-shopping-cart" />
-                    </div>
-                    <div className="text">
-                      <h2>388,688</h2>
-                      <span>items solid</span>
-                    </div>
-                  </div>
-                  <div className="overview-chart">
-                    <canvas id="widgetChart2" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-sm-6 col-lg-3">
-              <div className="overview-item overview-item--c3">
-                <div className="overview__inner">
-                  <div className="overview-box clearfix">
-                    <div className="icon">
-                      <i className="zmdi zmdi-calendar-note" />
-                    </div>
-                    <div className="text">
-                      <h2>1,086</h2>
-                      <span>this week</span>
-                    </div>
-                  </div>
-                  <div className="overview-chart">
-                    <canvas id="widgetChart3" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-sm-6 col-lg-3">
-              <div className="overview-item overview-item--c4">
-                <div className="overview__inner">
-                  <div className="overview-box clearfix">
-                    <div className="icon">
-                      <i className="zmdi zmdi-money" />
-                    </div>
-                    <div className="text">
-                      <h2>$1,060,386</h2>
-                      <span>total earnings</span>
-                    </div>
-                  </div>
-                  <div className="overview-chart">
-                    <canvas id="widgetChart4" />
+    );
+  }
+
+  // Si erreur lors du chargement des données
+  if (error) {
+    return (
+      <div className="page-wrapper flex items-center justify-center h-screen">
+        <div className="text-center p-6 bg-red-50 rounded-xl shadow max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-red-700 mb-2">Erreur de chargement</h2>
+          <p className="text-gray-700 mb-4">{error}</p>
+          <button 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            onClick={() => window.location.reload()}
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-wrapper">
+      <Sidebar />
+      <div className="page-container">
+        <header className="header-desktop">
+          <div className="section__content section__content--p30">
+            <div className="container-fluid">
+              <div className="header-wrap">
+                <form className="form-header" method="POST">
+                  <input 
+                    className="au-input au-input--xl" 
+                    type="text" 
+                    name="search" 
+                    placeholder="Rechercher des données et rapports..." 
+                  />
+                  <button className="au-btn--submit" type="submit">
+                    <i className="zmdi zmdi-search" />
+                  </button>
+                </form>
+                <div className="header-button">
+                  <div className="account-wrap">
+                    <UserDropdownAdmin />
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        
-          <div className="row">
-            <div className="col-lg-9">
-              <h2 className="title-1 m-b-25">Services</h2>
-              <div className="table-responsive table--no-card m-b-40">
-                <table className="table table-borderless table-striped table-earning">
-                  <thead>
+        </header>
+
+        <div className="p-6 bg-gray-50 min-h-screen">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Tableau de bord analytique</h1>
+          
+          </div>
+
+          {/* Cartes statistiques principales */}
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+  <StatCard 
+    title="Total des candidatures" 
+    value={data.totalApps} 
+    icon="📄" 
+    color="blue-500"
+  />
+  <StatCard 
+    title="Candidatures simplifiées" 
+    value={data.totalAppsSimplified} 
+    icon="📝" 
+    color="green-500"
+  />
+  <StatCard 
+    title="Taux d'acceptation" 
+    value={data.globalAcceptanceRate || "N/A"} 
+    icon="✅" 
+    color="emerald-500"
+  />
+  <StatCard 
+    title="Messages importants" 
+    value={`${data.messageStats.importancePercentage}`} 
+    icon="📨" 
+    color="indigo-500"
+  />
+</div>
+
+
+          {/* Première rangée de graphiques */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <ChartCard title="Distribution des candidatures par type">
+              <div className="h-64">
+                <Doughnut 
+                  data={chartData.typeRatioData}
+                  options={{
+                    ...chartOptions,
+                    cutout: '60%',
+                    plugins: {
+                      ...chartOptions.plugins,
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                          }
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+              <div className="mt-3 text-center text-sm text-gray-500">
+                <strong>{data.typeRatio.percentageSimplifiee}</strong> des candidatures sont en format simplifié
+              </div>
+            </ChartCard>
+
+            <ChartCard title="Candidatures par catégorie">
+              <div className="h-64">
+                <Pie 
+                  data={chartData.categoryData}
+                  options={chartOptions}
+                />
+              </div>
+            </ChartCard>
+          </div>
+
+          {/* Deuxième rangée - Comparaison des statuts */}
+          <div className="mb-6">
+            <ChartCard 
+              title="Comparaison des candidatures par statut" 
+              subtitle="Répartition des statuts entre candidatures standard et simplifiées"
+            >
+              <div className="h-72">
+                <Bar
+                  data={chartData.comparativeStatusData}
+                  options={{
+                    ...chartOptions,
+                    scales: {
+                      x: {
+                        grid: {
+                          display: false
+                        }
+                      },
+                      y: {
+                        beginAtZero: true,
+                        grid: {
+                          color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </ChartCard>
+          </div>
+
+          {/* Troisième rangée - Statistiques détaillées */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <ChartCard title="Taux d'acceptation" subtitle="Comparatif des deux types de candidatures">
+              <div className="space-y-4 px-4">
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Candidatures standard</span>
+                  <div className="flex items-center mt-1">
+                    <div className="w-full bg-gray-200 rounded-full h-4">
+                      <div 
+                        className="bg-blue-500 h-4 rounded-full" 
+                        style={{ width: data.globalAcceptanceRate || '0%' }}
+                      ></div>
+                    </div>
+                    <span className="ml-3 font-bold">{data.globalAcceptanceRate || '0%'}</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Candidatures simplifiées</span>
+                  <div className="flex items-center mt-1">
+                    <div className="w-full bg-gray-200 rounded-full h-4">
+                      <div 
+                        className="bg-pink-500 h-4 rounded-full" 
+                        style={{ width: data.globalAcceptanceRateSimplifiee || '0%' }}
+                      ></div>
+                    </div>
+                    <span className="ml-3 font-bold">{data.globalAcceptanceRateSimplifiee || '0%'}</span>
+                  </div>
+                </div>
+              </div>
+            </ChartCard>
+
+            <ChartCard title="Statistiques des messages">
+              <div className="h-56">
+                <Doughnut 
+                  data={chartData.messageData}
+                  options={{
+                    ...chartOptions,
+                    cutout: '70%'
+                  }}
+                />
+              </div>
+              <div className="mt-3 text-center text-sm">
+                <div><strong>{data.messageStats.totalMessages}</strong> messages au total</div>
+                <div><strong>{data.messageStats.importantMessages}</strong> messages importants</div>
+              </div>
+            </ChartCard>
+
+            <ChartCard title="Top 5 des offres populaires">
+              <ul className="space-y-3">
+                {data.topJobs.length > 0 ? (
+                  data.topJobs.map((job, index) => (
+                    <li key={index} className="flex items-center">
+                      <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${index < 3 ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                        {index + 1}
+                      </div>
+                      <div className="ml-3 flex-grow">
+                        <div className="font-medium truncate">{job.jobTitle || 'Titre non défini'}</div>
+                        <div className="text-sm text-gray-500">{job.count} candidatures</div>
+                      </div>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-gray-500 text-center py-4">Aucune donnée disponible</li>
+                )}
+              </ul>
+            </ChartCard>
+          </div>
+
+          {/* Statistiques par mois */}
+          <div className="mb-6">
+            <ChartCard title="Évolution des candidatures par mois" subtitle="Tendance sur la période">
+              <div className="h-80">
+                <Line
+                  data={chartData.monthlyData}
+                  options={{
+                    ...chartOptions,
+                    scales: {
+                      x: {
+                        grid: {
+                          display: false
+                        }
+                      },
+                      y: {
+                        beginAtZero: true,
+                        grid: {
+                          color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                          precision: 0
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </ChartCard>
+          </div>
+
+          {/* Tableaux détaillés */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 bg-white rounded-xl shadow">
+              <h2 className="text-xl font-semibold mb-4">Détails des candidatures standards</h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th>date</th>
-                      <th>order ID</th>
-                      <th>name</th>
-                      <th className="text-right">price</th>
-                      <th className="text-right">quantity</th>
-                      <th className="text-right">total</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pourcentage</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr>
-                      <td>2018-09-29 05:57</td>
-                      <td>100398</td>
-                      <td>iPhone X 64Gb Grey</td>
-                      <td className="text-right">$999.00</td>
-                      <td className="text-right">1</td>
-                      <td className="text-right">$999.00</td>
-                    </tr>
-                    <tr>
-                      <td>2018-09-28 01:22</td>
-                      <td>100397</td>
-                      <td>Samsung S8 Black</td>
-                      <td className="text-right">$756.00</td>
-                      <td className="text-right">1</td>
-                      <td className="text-right">$756.00</td>
-                    </tr>
-                    <tr>
-                      <td>2018-09-27 02:12</td>
-                      <td>100396</td>
-                      <td>Game Console Controller</td>
-                      <td className="text-right">$22.00</td>
-                      <td className="text-right">2</td>
-                      <td className="text-right">$44.00</td>
-                    </tr>
-                    <tr>
-                      <td>2018-09-26 23:06</td>
-                      <td>100395</td>
-                      <td>iPhone X 256Gb Black</td>
-                      <td className="text-right">$1199.00</td>
-                      <td className="text-right">1</td>
-                      <td className="text-right">$1199.00</td>
-                    </tr>
-                    <tr>
-                      <td>2018-09-25 19:03</td>
-                      <td>100393</td>
-                      <td>USB 3.0 Cable</td>
-                      <td className="text-right">$10.00</td>
-                      <td className="text-right">3</td>
-                      <td className="text-right">$30.00</td>
-                    </tr>
-                    <tr>
-                      <td>2018-09-29 05:57</td>
-                      <td>100392</td>
-                      <td>Smartwatch 4.0 LTE Wifi</td>
-                      <td className="text-right">$199.00</td>
-                      <td className="text-right">6</td>
-                      <td className="text-right">$1494.00</td>
-                    </tr>
-                    <tr>
-                      <td>2018-09-24 19:10</td>
-                      <td>100391</td>
-                      <td>Camera C430W 4k</td>
-                      <td className="text-right">$699.00</td>
-                      <td className="text-right">1</td>
-                      <td className="text-right">$699.00</td>
-                    </tr>
-                    <tr>
-                      <td>2018-09-22 00:43</td>
-                      <td>100393</td>
-                      <td>USB 3.0 Cable</td>
-                      <td className="text-right">$10.00</td>
-                      <td className="text-right">3</td>
-                      <td className="text-right">$30.00</td>
-                    </tr>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {data.statusStats.map((stat, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="font-medium">{formatStatusLabel(stat.status)}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">{stat.count}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{stat.percentage}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
             </div>
-            <div className="col-lg-3">
-              <h2 className="title-1 m-b-25">Top countries</h2>
-              <div className="au-card au-card--bg-blue au-card-top-countries m-b-40">
-                <div className="au-card-inner">
-                  <div className="table-responsive">
-                    <table className="table table-top-countries">
-                      <tbody>
-                        <tr>
-                          <td>United States</td>
-                          <td className="text-right">$119,366.96</td>
-                        </tr>
-                        <tr>
-                          <td>Australia</td>
-                          <td className="text-right">$70,261.65</td>
-                        </tr>
-                        <tr>
-                          <td>United Kingdom</td>
-                          <td className="text-right">$46,399.22</td>
-                        </tr>
-                        <tr>
-                          <td>Turkey</td>
-                          <td className="text-right">$35,364.90</td>
-                        </tr>
-                        <tr>
-                          <td>Germany</td>
-                          <td className="text-right">$20,366.96</td>
-                        </tr>
-                        <tr>
-                          <td>France</td>
-                          <td className="text-right">$10,366.96</td>
-                        </tr>
-                        <tr>
-                          <td>Australia</td>
-                          <td className="text-right">$5,366.96</td>
-                        </tr>
-                        <tr>
-                          <td>Italy</td>
-                          <td className="text-right">$1639.32</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-lg-6">
-              <div className="au-card au-card--no-shadow au-card--no-pad m-b-40">
-                <div className="au-card-title" style={{backgroundImage: 'url("images/bg-title-01.jpg")'}}>
-                  <div className="bg-overlay bg-overlay--blue" />
-                  <h3>
-                    <i className="zmdi zmdi-account-calendar" />26 April, 2018</h3>
-                  <button className="au-btn-plus">
-                    <i className="zmdi zmdi-plus" />
-                  </button>
-                </div>
-                <div className="au-task js-list-load">
-                  <div className="au-task__title">
-                    <p>Tasks for John Doe</p>
-                  </div>
-                  <div className="au-task-list js-scrollbar3">
-                    <div className="au-task__item au-task__item--danger">
-                      <div className="au-task__item-inner">
-                        <h5 className="task">
-                          <a href="#">Meeting about plan for Admin Template 2018</a>
-                        </h5>
-                        <span className="time">10:00 AM</span>
-                      </div>
-                    </div>
-                    <div className="au-task__item au-task__item--warning">
-                      <div className="au-task__item-inner">
-                        <h5 className="task">
-                          <a href="#">Create new task for Dashboard</a>
-                        </h5>
-                        <span className="time">11:00 AM</span>
-                      </div>
-                    </div>
-                    <div className="au-task__item au-task__item--primary">
-                      <div className="au-task__item-inner">
-                        <h5 className="task">
-                          <a href="#">Meeting about plan for Admin Template 2018</a>
-                        </h5>
-                        <span className="time">02:00 PM</span>
-                      </div>
-                    </div>
-                    <div className="au-task__item au-task__item--success">
-                      <div className="au-task__item-inner">
-                        <h5 className="task">
-                          <a href="#">Create new task for Dashboard</a>
-                        </h5>
-                        <span className="time">03:30 PM</span>
-                      </div>
-                    </div>
-                    <div className="au-task__item au-task__item--danger js-load-item">
-                      <div className="au-task__item-inner">
-                        <h5 className="task">
-                          <a href="#">Meeting about plan for Admin Template 2018</a>
-                        </h5>
-                        <span className="time">10:00 AM</span>
-                      </div>
-                    </div>
-                    <div className="au-task__item au-task__item--warning js-load-item">
-                      <div className="au-task__item-inner">
-                        <h5 className="task">
-                          <a href="#">Create new task for Dashboard</a>
-                        </h5>
-                        <span className="time">11:00 AM</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="au-task__footer">
-                    <button className="au-btn au-btn-load js-load-btn">load more</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-6">
-              <div className="au-card au-card--no-shadow au-card--no-pad m-b-40">
-                <div className="au-card-title" style={{backgroundImage: 'url("images/bg-title-02.jpg")'}}>
-                  <div className="bg-overlay bg-overlay--blue" />
-                  <h3>
-                    <i className="zmdi zmdi-comment-text" />New Messages</h3>
-                  <button className="au-btn-plus">
-                    <i className="zmdi zmdi-plus" />
-                  </button>
-                </div>
-                <div className="au-inbox-wrap js-inbox-wrap">
-                  <div className="au-message js-list-load">
-                    <div className="au-message__noti">
-                      <p>You Have
-                        <span>2</span>
-                        new messages
-                      </p>
-                    </div>
-                    <div className="au-message-list">
-                      <div className="au-message__item unread">
-                        <div className="au-message__item-inner">
-                          <div className="au-message__item-text">
-                            <div className="avatar-wrap">
-                              <div className="avatar">
-                                <img src="images/icon/avatar-02.jpg" alt="John Smith" />
-                              </div>
-                            </div>
-                            <div className="text">
-                              <h5 className="name">John Smith</h5>
-                              <p>Have sent a photo</p>
-                            </div>
-                          </div>
-                          <div className="au-message__item-time">
-                            <span>12 Min ago</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="au-message__item unread">
-                        <div className="au-message__item-inner">
-                          <div className="au-message__item-text">
-                            <div className="avatar-wrap online">
-                              <div className="avatar">
-                                <img src="images/icon/avatar-03.jpg" alt="Nicholas Martinez" />
-                              </div>
-                            </div>
-                            <div className="text">
-                              <h5 className="name">Nicholas Martinez</h5>
-                              <p>You are now connected on message</p>
-                            </div>
-                          </div>
-                          <div className="au-message__item-time">
-                            <span>11:00 PM</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="au-message__item">
-                        <div className="au-message__item-inner">
-                          <div className="au-message__item-text">
-                            <div className="avatar-wrap online">
-                              <div className="avatar">
-                                <img src="images/icon/avatar-04.jpg" alt="Michelle Sims" />
-                              </div>
-                            </div>
-                            <div className="text">
-                              <h5 className="name">Michelle Sims</h5>
-                              <p>Lorem ipsum dolor sit amet</p>
-                            </div>
-                          </div>
-                          <div className="au-message__item-time">
-                            <span>Yesterday</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="au-message__item">
-                        <div className="au-message__item-inner">
-                          <div className="au-message__item-text">
-                            <div className="avatar-wrap">
-                              <div className="avatar">
-                                <img src="images/icon/avatar-05.jpg" alt="Michelle Sims" />
-                              </div>
-                            </div>
-                            <div className="text">
-                              <h5 className="name">Michelle Sims</h5>
-                              <p>Purus feugiat finibus</p>
-                            </div>
-                          </div>
-                          <div className="au-message__item-time">
-                            <span>Sunday</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="au-message__item js-load-item">
-                        <div className="au-message__item-inner">
-                          <div className="au-message__item-text">
-                            <div className="avatar-wrap online">
-                              <div className="avatar">
-                                <img src="images/icon/avatar-04.jpg" alt="Michelle Sims" />
-                              </div>
-                            </div>
-                            <div className="text">
-                              <h5 className="name">Michelle Sims</h5>
-                              <p>Lorem ipsum dolor sit amet</p>
-                            </div>
-                          </div>
-                          <div className="au-message__item-time">
-                            <span>Yesterday</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="au-message__item js-load-item">
-                        <div className="au-message__item-inner">
-                          <div className="au-message__item-text">
-                            <div className="avatar-wrap">
-                              <div className="avatar">
-                                <img src="images/icon/avatar-05.jpg" alt="Michelle Sims" />
-                              </div>
-                            </div>
-                            <div className="text">
-                              <h5 className="name">Michelle Sims</h5>
-                              <p>Purus feugiat finibus</p>
-                            </div>
-                          </div>
-                          <div className="au-message__item-time">
-                            <span>Sunday</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="au-message__footer">
-                      <button className="au-btn au-btn-load js-load-btn">load more</button>
-                    </div>
-                  </div>
-                  <div className="au-chat">
-                    <div className="au-chat__title">
-                      <div className="au-chat-info">
-                        <div className="avatar-wrap online">
-                          <div className="avatar avatar--small">
-                            <img src="images/icon/avatar-02.jpg" alt="John Smith" />
-                          </div>
-                        </div>
-                        <span className="nick">
-                          <a href="#">John Smith</a>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="au-chat__content">
-                      <div className="recei-mess-wrap">
-                        <span className="mess-time">12 Min ago</span>
-                        <div className="recei-mess__inner">
-                          <div className="avatar avatar--tiny">
-                            <img src="images/icon/avatar-02.jpg" alt="John Smith" />
-                          </div>
-                          <div className="recei-mess-list">
-                            <div className="recei-mess">Lorem ipsum dolor sit amet, consectetur adipiscing elit non iaculis</div>
-                            <div className="recei-mess">Donec tempor, sapien ac viverra</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="send-mess-wrap">
-                        <span className="mess-time">30 Sec ago</span>
-                        <div className="send-mess__inner">
-                          <div className="send-mess-list">
-                            <div className="send-mess">Lorem ipsum dolor sit amet, consectetur adipiscing elit non iaculis</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="au-chat-textfield">
-                      <form className="au-form-icon">
-                        <input className="au-input au-input--full au-input--h65" type="text" placeholder="Type a message" />
-                        <button className="au-input-icon">
-                          <i className="zmdi zmdi-camera" />
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-md-12">
-              <div className="copyright">
-                <p>Copyright © 2018 Colorlib. All rights reserved. Template by <a href="https://colorlib.com">Colorlib</a>.</p>
+
+            <div className="p-4 bg-white rounded-xl shadow">
+              <h2 className="text-xl font-semibold mb-4">Détails des candidatures simplifiées</h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pourcentage</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {data.simplifiedStatusStats.map((stat, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="font-medium">{formatStatusLabel(stat.status)}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">{stat.count}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{stat.percentage}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    {/* END MAIN CONTENT*/}
-    {/* END PAGE CONTAINER*/}
-  </div>
-</div>
-
-    );
+  );
 }
+
 export default HomeAd;

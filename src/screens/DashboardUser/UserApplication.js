@@ -51,14 +51,14 @@ const UserApplication = () => {
     <>
       <NavbarUser />
       <div style={styles.container}>
-        <h1 style={styles.title}>Mes Candidatures</h1>
+        <h1 style={styles.title}>My Applications</h1>
   
         {loading ? (
-          <p style={styles.textGray}>Chargement...</p>
+          <p style={styles.textGray}>Loading...</p>
         ) : error ? (
           <div style={styles.textError}>{error}</div>
         ) : applications.length === 0 ? (
-          <p style={styles.textGray}>Aucune candidature trouvée.</p>
+          <p style={styles.textGray}>No applications found.</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {applications.map((app) => (
@@ -98,7 +98,7 @@ const UserApplication = () => {
                     to={`/ApplicationDetails/${app.job?._id}`}
                     style={styles.link}
                   >
-                    Voir les détails du job
+                    	View job details
                   </Link>
   
                   {app.status === "accepted" && (
@@ -111,14 +111,14 @@ const UserApplication = () => {
   
                       {app.answers && Object.keys(app.answers).length > 0 ? (
                         <button style={styles.disabledButton} disabled>
-                          Entretien déjà passé
+                          Interview already completed
                         </button>
                       ) : (
                         <button
                           onClick={() => handleViewQuestions(app._id)}
                           style={styles.viewButton}
                         >
-                          Voir les questions d'entretien
+                          View interview questions
                         </button>
                       )}
                     </div>

@@ -14,7 +14,7 @@ import MessagePage from './screens/Dashboard/screens/MessagePage.js';
 import CategoriesPage from './screens/Dashboard/screens/CategoriesPage.js';
 import SimplifiedApplication from './screens/Home/Homee/simplified-application.js';
 import Postuler from './screens/Home/Homee/Postuler.js';
-import Chatbot from './screens/Chatbot/Chatbot.js';
+
 import DashboardUser from './screens/DashboardUser/DashboardUser.js';
 import MyAccount from './screens/DashboardUser/MyAccount.js';
 import ChangePassword from './screens/DashboardUser/ChangePassword.js';
@@ -33,7 +33,11 @@ import InterviewQuestionsPage from './screens/DashboardUser/InterviewQuestionPag
 import ApplicationDetails from './screens/DashboardUser/ApplicationDetails.js';
 import AddJobPage from './screens/Dashboard/screens/AddJobPage.js';
 import GererLocations from './screens/Dashboard/screens/GererLocations.js';
-
+import ResetPassword from './screens/Login/ResetPassword.js';
+import InterviewAnswersPage from './screens/Dashboard/screens/InterviewAnswersPage.js';
+import QuestionsAnswersPage from './screens/Dashboard/screens/InterviewAnswersPage.js';
+import AdminRoute from './screens/Dashboard/components/Protected.js';
+import ModifyAccountAdmin from './screens/Dashboard/screens/ShowAccountAdmin.js';
 
 
 function App() {
@@ -47,14 +51,23 @@ function App() {
       <Route path="/findjob" element={<FindJob />} />
       <Route path="/Login" element={<Login />} />
       <Route path="/Register" element={<Register />} />
-      <Route path="/Dashboard" element={<HomeAd />} />
-      <Route path="/number" element={<NumberPage />} />
-      <Route path="/map" element={<MapPage />} />
-      <Route path="/message" element={<MessagePage />} />
-      <Route path="/categories" element={<CategoriesPage/>} />
+      <Route path="/ShowAccountAdmin" element={<ModifyAccountAdmin />} />
+      
+      <Route 
+          path="/number" 
+          element={
+            <AdminRoute>
+              <NumberPage />
+            </AdminRoute>
+          } 
+        />
+      <Route path="/map" element={<AdminRoute><MapPage /></AdminRoute>} />
+      <Route path="/message" element={<AdminRoute><MessagePage /></AdminRoute>} />
+      <Route path="/categories" element={<AdminRoute><CategoriesPage/></AdminRoute>}  />
       <Route path="/simplified-application" element={<SimplifiedApplication/>} />
       <Route path="/postuler" element={<Postuler/>} />
-      <Route path="/Chatbot" element={<Chatbot/>} />
+      <Route path="/interview-answers/:applicationId" element={<InterviewAnswersPage />} />
+      <Route path="/applications/:idjob/questions-answers" element={<QuestionsAnswersPage />} />
       <Route path="/dashboarduser" element={<DashboardUser/>} />
       <Route path="/my-account" element={<MyAccount />} />
       <Route path="/ForgotPassword" element={<ForgotPassword />} />
@@ -66,18 +79,28 @@ function App() {
       <Route path="/userapplication" element={<UserApplication />} />
       <Route path="/job_details/:id" element={<JobDetails/>} />
       <Route path="/jobs/:categoryId" element={<JobsPage />} />
-      <Route path="/candidaturesimplifier" element={<ApplicationsList />} />
+      <Route path="/candidaturesimplifier" element={<AdminRoute><ApplicationsList /></AdminRoute>} />
       <Route path="/job/:jobId/applications" element={<JobApplicationsPage />} />
-      <Route path="/manage-questions/:jobId" element={<ManageQuestionsPage/>} />
+      <Route path="/manage-questions/:jobId" element={<AdminRoute><ManageQuestionsPage/></AdminRoute>} />
       <Route path="/questions/:applicationId" element={<InterviewQuestionsPage />} />
       <Route path="/ApplicationDetails/:id" element={<ApplicationDetails />} />
       
-      <Route path="/category/:categoryId/jobs" element={<JobsPage />} />
-      <Route path="/category/:categoryId/add-job" element={<AddJobPage />} />
+      <Route path="/category/:categoryId/jobs" element={<AdminRoute><JobsPage /></AdminRoute>} />
+      <Route path="/category/:categoryId/add-job" element={<AdminRoute><AddJobPage /></AdminRoute>} />
       
-      <Route path="/gerer-locations" element={<GererLocations />} />
+      <Route path="/gerer-locations" element={<AdminRoute><GererLocations /></AdminRoute>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route
+        path="/Dashboard"
+        element={
+          <AdminRoute>
+            <HomeAd />
+          </AdminRoute>
+        }
+      />
+</Routes>
     
-      </Routes>
+      
     </Router>
   );
 }

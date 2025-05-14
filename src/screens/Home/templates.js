@@ -8,6 +8,7 @@ import WhatWeDo from "./Homee/WhatWeDo";
 import LatestBlog from "./Homee/LatestBlog";
 import Footer from "./Homee/Footer";
 import Header from "./Homee/Header";
+import ChatBubble from "../chatboat/chatboat";
 
 
 
@@ -39,6 +40,7 @@ function Template() {
         <Hero/>
         
         <TopCateg/>
+        <ChatBubble/>
        
          
         <UploadCv/>

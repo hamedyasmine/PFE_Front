@@ -28,10 +28,10 @@ function UploadCv() {
             }}
           >
             <h2 style={{ color: "#0b1c39", fontWeight: "700", fontSize: "2.2rem" }}>
-              Candidature Simplifiée
+            Open Application
             </h2>
             <p style={{ color: "#0b1c39", fontSize: "1.1rem", marginTop: "10px" }}>
-              Postulez facilement avec votre CV en ligne !
+            Apply easily with your online CV!
             </p>
 
             <div className="text-center mt-4">
@@ -50,7 +50,7 @@ function UploadCv() {
                 onMouseEnter={(e) => (e.target.style.backgroundColor = "#142e66")}
                 onMouseLeave={(e) => (e.target.style.backgroundColor = "#0b1c39")}
               >
-                Commencer ma candidature
+                	Start my application
               </Link>
             </div>
           </div>

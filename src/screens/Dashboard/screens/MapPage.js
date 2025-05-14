@@ -6,6 +6,9 @@ function ContactInfo() {
   const [contactInfo, setContactInfo] = useState({ email: "", phone: "" });
   const [newContactInfo, setNewContactInfo] = useState({ email: "", phone: "" });
   const [status, setStatus] = useState(null);
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const isAdmin = role === "admin";
 
   useEffect(() => {
     const fetchContactInfo = async () => {
@@ -30,7 +33,11 @@ function ContactInfo() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put("http://localhost:5000/api/contact-info", newContactInfo);
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      const response = await axios.put("http://localhost:5000/api/contact-info", newContactInfo, config);
       setContactInfo(newContactInfo);
       setStatus({ type: "success", message: response.data.message });
     } catch (error) {
@@ -40,11 +47,29 @@ function ContactInfo() {
 
   const handleDelete = async () => {
     try {
-      await axios.delete("http://localhost:5000/api/contact-info");
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      await axios.delete("http://localhost:5000/api/contact-info", config);
       setContactInfo({ email: "", phone: "" });
       setStatus({ type: "success", message: "Informations supprimées avec succès" });
     } catch (error) {
       setStatus({ type: "error", message: error.response?.data?.message || "Une erreur est survenue" });
+    }
+  };
+
+  const handleAdd = async () => {
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      const response = await axios.post("http://localhost:5000/api/contact-info", newContactInfo, config);
+      setContactInfo(response.data.data);
+      setStatus({ type: "success", message: response.data.message });
+    } catch (error) {
+      setStatus({ type: "error", message: error.response?.data?.message || "Erreur lors de l'ajout des informations" });
     }
   };
 
@@ -69,13 +94,9 @@ function ContactInfo() {
       <Sidebar />
       <div className="container mt-5">
         <div className="card shadow-lg p-4" style={{ maxWidth: "600px", margin: "0 auto" }}>
-        <h2
-  className="text-center mb-4"
-  style={{ fontSize: "20px", color: "#0d47a1" }}
->
-  Modifier les informations de contact
-</h2>
-
+          <h2 className="text-center mb-4" style={{ fontSize: "20px", color: "#0d47a1" }}>
+            Edit contact information
+          </h2>
 
           {status && (
             <div className={`alert ${status.type === "success" ? "alert-success" : "alert-danger"}`} style={{ fontSize: "14px" }}>
@@ -97,7 +118,7 @@ function ContactInfo() {
             </div>
 
             <div className="form-group">
-              <label>Téléphone</label>
+              <label>Phone</label>
               <input
                 type="text"
                 name="phone"
@@ -109,18 +130,29 @@ function ContactInfo() {
             </div>
 
             <button type="submit" className="btn btn-block mt-3" style={gradientBlue}>
-              Sauvegarder les modifications
+              Save changes
             </button>
           </form>
 
           <button onClick={handleDelete} className="btn btn-block mt-3" style={gradientRed}>
-            Supprimer les informations
+            Delete information
           </button>
+
+          {isAdmin && (
+            <button
+              onClick={handleAdd}
+              className="btn btn-block mt-3"
+              style={{ ...gradientBlue, background: "linear-gradient(to right, #0f2027, #203a43, #2c5364)" }}
+              disabled={!newContactInfo.email || !newContactInfo.phone}
+            >
+              Add contact info
+            </button>
+          )}
 
           <h3 className="mt-4" style={{ fontSize: "18px" }}>Informations actuelles</h3>
           <div className="border p-3" style={{ fontSize: "14px" }}>
             <p><strong>Email:</strong> {contactInfo.email}</p>
-            <p><strong>Téléphone:</strong> {contactInfo.phone}</p>
+            <p><strong>Phone:</strong> {contactInfo.phone}</p>
           </div>
         </div>
       </div>

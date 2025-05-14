@@ -9,7 +9,11 @@ const CategoriesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [notification, setNotification] = useState('');
   const itemsPerPage = 4;
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const isAdmin = role === "admin";
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     fetchCategories();
@@ -27,20 +31,37 @@ const CategoriesPage = () => {
   const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!newCategory) return;
+  
     try {
-      const response = await axios.post('http://localhost:5000/api/categories', { name: newCategory });
+      const config = {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      };
+      const response = await axios.post(
+        'http://localhost:5000/api/categories',
+        { name: newCategory },
+        config
+      );
+      
       setNotification('Catégorie ajoutée avec succès !');
       setCategories(prev => [...prev, response.data]);
       setNewCategory('');
-      setCurrentPage(Math.ceil((categories.length + 1) / itemsPerPage)); // aller à la dernière page
+      setCurrentPage(Math.ceil((categories.length + 1) / itemsPerPage));
     } catch (error) {
       console.error("Erreur lors de l'ajout", error);
     }
   };
+  
 
   const handleDeleteCategory = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/categories/${id}`);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+      await axios.delete(`http://localhost:5000/api/categories/${id}`, config);
       const updated = categories.filter(c => c._id !== id);
       setCategories(updated);
       setNotification('Catégorie supprimée');
@@ -50,6 +71,7 @@ const CategoriesPage = () => {
       console.error("Erreur lors de la suppression", error);
     }
   };
+  
 
   const totalPages = Math.ceil(categories.length / itemsPerPage);
   const displayedCategories = categories.slice(
@@ -61,27 +83,27 @@ const CategoriesPage = () => {
     <>
     <Sidebar/>
     <div style={styles.container}>
-      <h1 style={styles.title}>Gestion des Catégories</h1>
+      <h1 style={styles.title}>Category Management</h1>
 
       {notification && <div style={styles.notification}>{notification}</div>}
 
       <form style={styles.form} onSubmit={handleAddCategory}>
         <input
           type="text"
-          placeholder="Nouvelle catégorie"
+          placeholder="New Category"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
           required
           style={styles.input}
         />
-        <button type="submit" style={styles.addButton}>Ajouter</button>
+        <button type="submit" style={styles.addButton}>Add</button>
       </form>
 
       <table style={styles.table}>
         <thead>
           <tr>
-            <th style={styles.headerCell}>Nom</th>
-            <th style={styles.headerCell}>Actions</th>
+            <th style={styles.headerCell}>Name</th>
+            <th style={styles.headerCell}>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -90,10 +112,10 @@ const CategoriesPage = () => {
               <td style={styles.cell}>{category.name}</td>
               <td style={styles.cell}>
                 <button style={styles.deleteButton} onClick={() => handleDeleteCategory(category._id)}>
-                  Supprimer
+                Delete
                 </button>
                 <button style={styles.viewButton} onClick={() => navigate(`/jobs/${category._id}`)}>
-                  Consulter les Jobs
+                View Applications
                 </button>
               </td>
             </tr>
@@ -177,7 +199,7 @@ const styles = {
   headerCell: {
     padding: '12px',
     textAlign: 'left',
-    background: '#1565c0',
+    background: '#0d47a1',
     color: 'white',
     borderBottom: '1px solid #ddd'
   },

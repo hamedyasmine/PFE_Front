@@ -9,6 +9,7 @@ function Register() {
     phone: "",
     password: "",
     confirmPassword: "",
+    mathAnswer: "",
   });
 
   const [error, setError] = useState("");
@@ -22,18 +23,32 @@ function Register() {
     event.preventDefault();
     setError("");
     setSuccess("");
+      // Vérifie la réponse à la question
+    if (formData.mathAnswer !== "7") {
+    setError("Incorrect answer to the question.");
+    return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
+      setError("Passwords do not match.");
       return;
     }
+    if (!/(?=.*[A-Z])/.test(formData.password) || formData.password.length < 6) {
+    setError("Password must contain at least one uppercase letter and be longer than 6 characters.");
+    return;
+  }
+  if (!/^\d{8,15}$/.test(formData.phone)) {
+  setError("Phone number must contain only digits and be between 8 and 15 characters.");
+  return;
+}
+
 
     try {
       const response = await axios.post("http://localhost:5000/api/auth/register", formData, {
         headers: { "Content-Type": "application/json" },
       });
 
-      setSuccess("Inscription réussie ! Redirection en cours...");
+      setSuccess("Registration successful! Redirecting...");
       setTimeout(() => {
         window.location.href = "/login"; // Redirection après inscription
       }, 2000);
@@ -69,7 +84,7 @@ function Register() {
                     <div className="card-body p-4 p-lg-5 text-black">
                       <form onSubmit={handleSubmit}>
                         <h4 className="fw-normal mb-3 pb-3" style={{ letterSpacing: "1px" }}>
-                          Créez votre compte
+                          Create your account
                         </h4>
 
                         {error && <p style={{ color: "red" }}>{error}</p>}
@@ -80,7 +95,7 @@ function Register() {
                             type="text"
                             name="name"
                             className="form-control form-control-lg"
-                            placeholder="Nom complet"
+                            placeholder=" Full Name"
                             value={formData.name}
                             onChange={handleChange}
                             required
@@ -92,7 +107,7 @@ function Register() {
                             type="email"
                             name="email"
                             className="form-control form-control-lg"
-                            placeholder="Adresse e-mail"
+                            placeholder="Email Address"
                             value={formData.email}
                             onChange={handleChange}
                             required
@@ -104,54 +119,70 @@ function Register() {
                             type="tel"
                             name="phone"
                             className="form-control form-control-lg"
-                            placeholder="Numéro de téléphone"
+                            placeholder="Phone Number"
                             value={formData.phone}
                             onChange={handleChange}
                             required
                           />
                         </div>
+                        <small className="text-muted">Minimum 6 characters with at least one uppercase letter</small>
+
 
                         <div className="form-outline mb-4">
                           <input
                             type="password"
                             name="password"
                             className="form-control form-control-lg"
-                            placeholder="Mot de passe"
+                            placeholder="Password"
                             value={formData.password}
                             onChange={handleChange}
                             required
                           />
                         </div>
+                        
 
                         <div className="form-outline mb-4">
                           <input
                             type="password"
                             name="confirmPassword"
                             className="form-control form-control-lg"
-                            placeholder="Confirmez le mot de passe"
+                            placeholder="Confirm Password"
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             required
                           />
                         </div>
+                        <div className="form-outline mb-4">
+  <label htmlFor="mathQuestion"></label>
+  <input
+    type="text"
+    name="mathAnswer"
+    className="form-control form-control-lg"
+    placeholder="What is 3 + 4?"
+    value={formData.mathAnswer}
+    onChange={handleChange}
+    required
+  />
+</div>
+
 
                         <div className="pt-1 mb-4">
                           <button className="btn btn-dark btn-lg btn-block" type="submit">
-                            S'inscrire
+                            Sign Up
                           </button>
                         </div>
 
                         <p className="mb-5 pb-lg-2" style={{ color: "#393f81" }}>
-                          Vous avez déjà un compte ?{" "}
+                          Already have an account?{" "}
                           <a href="/login" style={{ color: "#393f81" }}>
-                            Connectez-vous ici
+                            Log in here
                           </a>
                         </p>
                         <a href="#!" className="small text-muted">
-                          Conditions d'utilisation.
+                          Terms of Use.
                         </a>
                         <a href="#!" className="small text-muted">
-                          Politique de confidentialité.
+                          Privacy Policy.
                         </a>
                       </form>
                     </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Sidebar from './Sidebar';
 
 const ManageQuestionsPage = () => {
   const { jobId } = useParams();
@@ -8,6 +9,13 @@ const ManageQuestionsPage = () => {
   const [newQuestions, setNewQuestions] = useState([]);
   const [mode, setMode] = useState('add');
   const [showModal, setShowModal] = useState(false);
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const isAdmin = role === "admin";
+   const navigate = useNavigate();
+  const goBack = () => {
+    navigate(-1);
+  };
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -45,7 +53,10 @@ const ManageQuestionsPage = () => {
 
   const submitQuestions = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/questions/${jobId}`, { questions: newQuestions });
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+      await axios.put(`http://localhost:5000/api/questions/${jobId}`, { questions: newQuestions },config);
       alert("Questions mises à jour avec succès !");
       setShowModal(false);
       setQuestions(newQuestions);
@@ -56,7 +67,10 @@ const ManageQuestionsPage = () => {
 
   const deleteQuestions = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/questions/${jobId}`);
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+      await axios.delete(`http://localhost:5000/api/questions/${jobId}`,config);
       alert("Questions supprimées avec succès !");
       setQuestions([]);
     } catch (error) {
@@ -65,11 +79,20 @@ const ManageQuestionsPage = () => {
   };
 
   return (
+    <>
+    <Sidebar/>
+    
     <div style={styles.pageContainer}>
+    <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '20px 20px 10px 250px' }}>
+    <button style={styles.backButton} onClick={goBack}>⬅ Back</button>
+  </div>
+    
+    
+ 
       <div style={styles.card}>
-        <h1 style={styles.title}>Gérer les Questions d'Entretien</h1>
+        <h1 style={styles.title}> Manage Interview Questions</h1>
 
-        <h3 style={styles.subtitle}>Questions actuelles</h3>
+        <h3 style={styles.subtitle}>Current Questions</h3>
         {questions.length > 0 ? (
           <ul style={styles.questionList}>
             {questions.map((q, index) => (
@@ -84,11 +107,11 @@ const ManageQuestionsPage = () => {
 
         <div style={styles.buttonGroup}>
           <button style={styles.primaryButton} onClick={() => { setShowModal(true); setMode('add'); }}>
-            Ajouter des Questions
+          Add Questions
           </button>
           {questions.length > 0 && (
             <button style={styles.deleteButton} onClick={deleteQuestions}>
-              Supprimer toutes les Questions
+               Delete All Questions
             </button>
           )}
         </div>
@@ -98,7 +121,7 @@ const ManageQuestionsPage = () => {
         <div style={styles.modalOverlay}>
           <div style={styles.modal}>
             <h2 style={styles.modalTitle}>
-              {mode === 'add' ? 'Ajouter des questions' : 'Modifier les questions'}
+              {mode === 'add' ? 'Add Questions' : 'Modifier les questions'}
             </h2>
 
             {newQuestions.map((q, index) => (
@@ -122,21 +145,22 @@ const ManageQuestionsPage = () => {
             ))}
 
             <button style={styles.addFieldButton} onClick={addQuestionField}>
-              + Ajouter une question
+              +  Add a Question
             </button>
 
             <div style={styles.modalActions}>
               <button style={styles.primaryButton} onClick={submitQuestions}>
-                Enregistrer
+              Save
               </button>
               <button style={styles.cancelButton} onClick={() => setShowModal(false)}>
-                Annuler
+              Cancel
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
+    </>
   );
 };
 
@@ -146,6 +170,16 @@ const styles = {
     margin: '0 auto',
     padding: '40px 20px',
     fontFamily: 'sans-serif',
+  },
+  backButton: {
+    padding: '10px 20px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
   },
   card: {
     background: '#fff',

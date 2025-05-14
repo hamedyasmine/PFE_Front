@@ -37,7 +37,7 @@ function AccountPost() {
     }
 
     if (!cv) {
-      setError("Veuillez télécharger votre CV.");
+      setError("Please upload your CV.");
       return;
     }
 
@@ -77,7 +77,7 @@ function AccountPost() {
         <div className="col-md-8">
           <div className="card">
             <div className="card-header bg-primary text-white">
-              <h4>Postuler à l'offre d'emploi</h4>
+              <h4>Apply for the job offer</h4>
             </div>
             <div className="card-body">
               {error && (
@@ -88,23 +88,23 @@ function AccountPost() {
               
               {success ? (
                 <div className="alert alert-success" role="alert">
-                  <h5>Votre candidature a été soumise avec succès!</h5>
-                  <p>Nous vous contacterons prochainement pour vous informer de l'avancement de votre candidature.</p>
+                  <h5>Your application has been submitted successfully!</h5>
+                  <p>We will contact you soon to update you on the progress of your application.</p>
                   <button 
                     className="btn btn-primary mt-3" 
                     onClick={() => navigate("/userapplication ")}
                   >
-                    Mes Candidatures
+                   My Applications
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleApply}>
                   <div className="mb-3">
-                    <p>Vous êtes sur le point de postuler pour l'offre <strong>ID: {jobId || "Inconnu"}</strong></p>
+                    <p>You are about to apply for the offer <strong>ID: {jobId || "Inconnu"}</strong></p>
                   </div>
                   
                   <div className="mb-4">
-                    <label htmlFor="cv" className="form-label">Télécharger votre CV (PDF)</label>
+                    <label htmlFor="cv" className="form-label">Upload your CV (PDF)</label>
                     <input 
                       type="file" 
                       className="form-control" 
@@ -113,7 +113,7 @@ function AccountPost() {
                       onChange={handleFileChange}
                       required
                     />
-                    <div className="form-text">Formats acceptés: PDF, DOC, DOCX</div>
+                    <div className="form-text">	Accepted formats: PDF, DOC, DOCX</div>
                   </div>
                   
                   <div className="d-flex justify-content-between">
@@ -127,7 +127,7 @@ function AccountPost() {
                           <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                           Envoi en cours...
                         </> : 
-                        "Envoyer ma candidature"
+                        "	submit my application"
                       }
                     </button>
                     
@@ -136,7 +136,7 @@ function AccountPost() {
                       className="btn btn-secondary" 
                       onClick={() => navigate(-1)}
                     >
-                      Retour
+                     	Back
                     </button>
                   </div>
                 </form>

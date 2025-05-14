@@ -6,6 +6,7 @@ import AboutItem from "../../components/AboutItem";
 import Counts from "./Homee/Count";
 import Values from "./About/Values";
 import Company from "./About/Company";
+import ChatBubble from "../chatboat/chatboat";
 
 function About() {
   const [aboutData, setAboutData] = useState([]);
@@ -66,7 +67,7 @@ function About() {
           </div>
         </div>
 
-      
+        <ChatBubble/>
 
         <Counts />
 

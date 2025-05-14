@@ -6,19 +6,32 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const navigate = useNavigate(); // Utilisation de useNavigate pour la redirection
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Email:", email);
-
-    // Ici, vous pouvez ajouter la logique d'envoi d'email pour la réinitialisation du mot de passe
-    // Exemple simple (à remplacer par la logique réelle de l'API)
-    if (email === "user@example.com") {
-      alert("A password reset link has been sent to your email.");
-      navigate("/login"); // Redirection vers la page de login après envoi
-    } else {
-      alert("Email not found. Please check your email address.");
+  
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        alert("A password reset link has been sent to your email.");
+        navigate("/login");
+      } else {
+        alert(data.message || "Something went wrong.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
     }
   };
+  
 
   return (
     <>

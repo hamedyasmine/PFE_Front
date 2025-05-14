@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 
@@ -10,13 +10,28 @@ const InterviewQuestionsPage = () => {
   const [answers, setAnswers] = useState({});
   const [timers, setTimers] = useState({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-
+  const [saveTimeout, setSaveTimeout] = useState(null);
+  const saveTimeoutRef = useRef(null);
+  const saveAnswer = async (index, answer) => {
+    try {
+      console.log(`➡️ Saving answer for question ${index}...`);
+      const response = await axios.post(
+        `http://localhost:5000/api/applications/${applicationId}/save-answer`,
+        { questionIndex: index, answer }
+      );
+      console.log(`✅ Answer saved for question ${index}:`, response.data);
+    } catch (error) {
+      console.error(`❌ Error saving answer for question ${index}:`, 
+        error.response?.data || error.message || error);
+    }
+  };
   // ✅ Fonction corrigée : gestion correcte du timer
   const startTimer = (index, duration) => {
     setTimers((prevTimers) => ({
       ...prevTimers,
       [index]: duration,
     }));
+    
 
     const timerInterval = setInterval(() => {
       setTimers((prevTimers) => {
@@ -40,8 +55,8 @@ const InterviewQuestionsPage = () => {
         setQuestions(response.data);
         startTimer(0, response.data[0].tempsDeReponse);
       } catch (error) {
-        console.error("Erreur lors de la récupération des questions :", error);
-        setError("Erreur lors de la récupération des questions.");
+        console.error("Error retrieving questions :", error);
+        setError("Error retrieving questions.");
       } finally {
         setLoading(false);
       }
@@ -52,33 +67,46 @@ const InterviewQuestionsPage = () => {
 
   const handleInputChange = (event, index) => {
     if (timers[index] > 0) {
+      const newAnswer = event.target.value;
+      
+      // Mettre à jour l'état local
       setAnswers({
         ...answers,
-        [index]: event.target.value,
+        [index]: newAnswer,
       });
+      
+      // Effacer le timeout précédent si existe
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      
+      // Créer un nouveau timeout
+      saveTimeoutRef.current = setTimeout(() => {
+        saveAnswer(index, newAnswer);
+      }, 500);
     }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      console.log("➡️ Envoi des réponses...");
+      console.log("➡️ 	Submitting answers...");
       const response = await axios.post(
         `http://localhost:5000/api/questions/applications/${applicationId}/submit-answers`,
         { answers }
       );
-      console.log("✅ Réponses soumises :", response.data);
+      console.log("✅	Answers submitted :", response.data);
   
-      console.log("➡️ Marquage entretien comme passé...");
+      console.log("➡️ Marking interview as completed...");
       const markResponse = await axios.put(
         `http://localhost:5000/api/questions/applications/${applicationId}/markInterviewPassed`
       );
-      console.log("✅ Entretien marqué :", markResponse.data);
+      console.log("✅ Interview marked :", markResponse.data);
   
-      alert("Réponses soumises avec succès !");
+      alert("Answers submitted successfully!");
     } catch (error) {
-      console.error("❌ Erreur :", error.response?.data || error.message || error);
-      alert("Erreur lors de la soumission : " + (error.response?.data?.message || error.message));
+      console.error("❌ Error :", error.response?.data || error.message || error);
+      alert("Answers submitted successfully! " + (error.response?.data?.message || error.message));
     }
   };
   
@@ -168,14 +196,14 @@ const InterviewQuestionsPage = () => {
 
   return (
     <div style={containerStyle}>
-      <h1 style={titleStyle}>Questions d'entretien</h1>
+      <h1 style={titleStyle}>Interview questions</h1>
 
       {loading ? (
-        <p>Chargement...</p>
+        <p>Loading...</p>
       ) : error ? (
         <div style={errorMessageStyle}>{error}</div>
       ) : questions.length === 0 ? (
-        <p>Aucune question trouvée.</p>
+        <p> No questions found.</p>
       ) : (
         <form onSubmit={handleSubmit}>
           <div style={questionsContainerStyle}>
@@ -189,13 +217,13 @@ const InterviewQuestionsPage = () => {
               >
                 <div style={questionStyle}>
                   <h3>{question.question}</h3>
-                  <p>Temps restant : {timers[index]} secondes</p>
+                  <p>Time remaining: {timers[index]} seconds</p>
                 </div>
                 <div style={answerContainerStyle}>
                   <textarea
                     style={answerTextareaStyle}
                     rows="4"
-                    placeholder="Votre réponse..."
+                    placeholder="Your answer..."
                     value={answers[index] || ""}
                     onChange={(e) => handleInputChange(e, index)}
                     disabled={timers[index] <= 0}
@@ -209,7 +237,7 @@ const InterviewQuestionsPage = () => {
             timers[currentQuestionIndex] === 0 && (
               <div style={submitButtonContainerStyle}>
                 <button type="submit" style={submitButtonStyle}>
-                  Soumettre mes réponses
+                Submit my answers
                 </button>
               </div>
             )}

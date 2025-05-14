@@ -43,14 +43,14 @@ function Footer() {
           <div className="row d-flex justify-content-between">
             {/* Section About Us */}
             <div className="col-xl-3 col-lg-3 col-md-4 col-sm-6">
-              <FooterItem title="À propos de nous">
-                <p>Notre plateforme alimentée par l'IA simplifie le recrutement en automatisant le tri des CV, en associant efficacement les candidats et en améliorant l'expérience d'embauche pour les employeurs et les chercheurs d'emploi.</p>
+              <FooterItem title="	About us">
+                <p>Our AI-powered platform streamlines recruitment by automating CV screening, efficiently matching candidates, and enhancing the hiring experience for both employers and job seekers.</p>
               </FooterItem>
             </div>
 
             {/* Section Contact Info */}
             <div className="col-xl-3 col-lg-3 col-md-4 col-sm-5">
-              <FooterItem title="Informations de contact">
+              <FooterItem title="	Contact information">
                 <ul>
                   {loading ? (
                     <li>Chargement des emplacements...</li>
@@ -61,7 +61,7 @@ function Footer() {
                   )}
                 </ul>
                 <ul>
-                  <li><a href={`tel:${contactInfo.phone}`}>Téléphone : {contactInfo.phone || "+216 365 8951"}</a></li>
+                  <li><a href={`tel:${contactInfo.phone}`}>	Phone : {contactInfo.phone || "+216 365 8951"}</a></li>
                   <li><a href={`mailto:${contactInfo.email}`}>Email : {contactInfo.email || "LeoniRecruit@leoni.com"}</a></li>
                 </ul>
               </FooterItem>
@@ -69,14 +69,7 @@ function Footer() {
 
             {/* Section Chatbot */}
             <div className="col-xl-3 col-lg-3 col-md-4 col-sm-5">
-              <FooterItem title="Chatbot">
-                <p>Chatbot pour vous guider et vous assister—n'hésitez pas à l'utiliser !</p>
-                <div className="footer-form">
-                  <div className="header-btn d-none f-right d-lg-block">
-                    <a href="/Chatbot" className="btn head-btn1">Discuter</a>
-                  </div>
-                </div>
-              </FooterItem>
+              
             </div>
           </div>
 
@@ -91,7 +84,7 @@ function Footer() {
             <div className="col-xl-3 col-lg-3 col-md-4 col-sm-5">
               <div className="footer-tittle-bottom">
                 <span>{loading ? "0" : places.length}</span>
-                <p>Emplacements</p>
+                <p>Location</p>
               </div>
             </div>
           </div>
@@ -106,7 +99,7 @@ function Footer() {
               <div className="col-xl-10 col-lg-10">
                 <div className="footer-copy-right">
                   <p>
-                    Copyright &copy;{new Date().getFullYear()} Tous droits réservés | Ce modèle est réalisé avec <i className="fa fa-heart" aria-hidden="true"></i> par <a href="https://colorlib.com" target="_blank" rel="noopener noreferrer">Colorlib</a>
+                    Copyright &copy;{new Date().getFullYear()} All rights reserved | 	This template is made with <i className="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank" rel="noopener noreferrer">Colorlib</a>
                   </p>
                 </div>
               </div>

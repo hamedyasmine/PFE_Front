@@ -18,11 +18,17 @@ function Login() {
         email,
         password,
       });
-
+  
       if (response.data.token) {
         // Si la réponse contient un token
         localStorage.setItem("token", response.data.token);
-        navigate("/dashboarduser"); // Redirection vers le dashboard
+        localStorage.setItem("role", response.data.role);
+  
+        if (response.data.role === "admin") {
+          navigate("/Dashboard"); // Redirection vers le dashboard admin
+        } else {
+          navigate("/dashboarduser"); // Redirection vers le dashboard utilisateur
+        }
       } else {
         alert("Authentication failed.");
       }
@@ -38,7 +44,7 @@ function Login() {
       setLoading(false); // Mise à jour de l'état loading à false une fois la requête terminée
     }
   };
-
+  
   return (
     <>
       <Header />
@@ -49,6 +55,7 @@ function Login() {
             "url('https://st2.depositphotos.com/3894705/7745/i/450/depositphotos_77458360-stock-photo-grunge-background-of-dark-blue.jpg')",
         }}
       >
+        
         <div className="container py-5 h-100">
           <div className="row d-flex justify-content-center align-items-center h-100">
             <div className="col col-xl-10">
@@ -133,6 +140,7 @@ function Login() {
             </div>
           </div>
         </div>
+        
       </section>
     </>
   );

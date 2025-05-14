@@ -12,7 +12,10 @@ const DashboardUser = () => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [userData, setUserData] = useState(null); 
-  
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/"); // Redirige vers la page de connexion
+  };
  
   const navigate = useNavigate();
 
@@ -30,35 +33,34 @@ const DashboardUser = () => {
     useEffect(() => {
       const fetchUserData = async () => {
         const token = localStorage.getItem("token");
-  
-        if (token) {
+    
+        if (!token) {
+          navigate("/Login");
+          return;
+        }
+    
+        try {
           const config = {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           };
-  
-          try {
-            const {data} = await axios.get("http://localhost:5000/api/auth/me", config);
-            setUserData(data._id); // Mettre à jour l'état avec les données utilisateur
-            setUserData(data.name);
-            setUserData(data.email);
-            setUserData(data.phone);
-            const token = data.token; // Supposons que la réponse contient le token
-            localStorage.setItem('authToken', token); 
-            
-          } catch (error) {
-            console.error("Erreur lors de la récupération des données :", error);
-          }
-        } else {
-          console.log("Aucun token trouvé.");
-          navigate("/Login"); // Redirige vers la page de login si pas de token
+    
+          const { data } = await axios.get("http://localhost:5000/api/auth/me", config);
+          setUserData({
+            id: data._id,
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+          });
+        } catch (error) {
+          console.error("Token invalide ou expiré :", error);
+          localStorage.removeItem("token");
+          navigate("/Login");
         }
       };
-  
+    
       fetchUserData();
-    }, [navigate]); // Le useEffect se déclenche lors du montage du composant
-
+    }, [navigate]);
+    
   const toggleMenu = () => {
     setIsMenuVisible(!isMenuVisible);
   };
@@ -118,7 +120,8 @@ const DashboardUser = () => {
               <div className="dropdown-menu">
                 <button onClick={handleShowInfo} style={{  color: "black"}}>Show Account</button>
 
-                <a href="/"><FaSignOutAlt color="black" /> Logout</a> {/* Icône noir */}
+                <button onClick={handleLogout}>Logout</button>
+{/* Icône noir */}
               </div>
             )}
           </div>

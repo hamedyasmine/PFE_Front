@@ -7,6 +7,7 @@ import Pagination from "./FindJobb/Pagination";
 import JobType from "./FindJobb/JobType";
 import JobPost from "./FindJobb/JobPost";
 import JobPlace from "./FindJobb/JobPlace";
+import ChatBubble from "../chatboat/chatboat";
 import { useState } from "react";
 
 function FindJob(){
@@ -111,6 +112,7 @@ function FindJob(){
         {/* Job List Area End */}
         {/*Pagination Start  */}
         <Pagination/>
+        <ChatBubble/>
         {/*Pagination End  */}
       </main>
       <footer>

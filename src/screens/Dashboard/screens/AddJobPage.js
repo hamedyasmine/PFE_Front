@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+const isAdmin = role === "admin";
 
 const AddJobPage = () => {
   const { categoryId } = useParams();
@@ -17,7 +20,10 @@ const AddJobPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/jobs', newJob);
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+      await axios.post('http://localhost:5000/api/jobs', newJob,config);
       navigate(`/category/${categoryId}/jobs`);
     } catch (error) {
       console.error("Erreur lors de l'ajout du job", error);
@@ -26,12 +32,12 @@ const AddJobPage = () => {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Ajouter un nouveau Job</h2>
+      <h2 style={styles.title}>Add a New Job</h2>
       <form onSubmit={handleSubmit} style={styles.form}>
         {[
-          { label: 'Titre', name: 'name', type: 'text' },
+          { label: 'Title', name: 'name', type: 'text' },
           { label: 'Localisation', name: 'location', type: 'text' },
-          { label: 'Durée (heures)', name: 'duration', type: 'number' }
+          { label: 'Duration (Hours)', name: 'duration', type: 'number' }
         ].map(({ label, name, type }) => (
           <div key={name} style={styles.formGroup}>
             <label style={styles.label}>{label}</label>
@@ -46,14 +52,14 @@ const AddJobPage = () => {
         ))}
 
         <div style={styles.formGroup}>
-          <label style={styles.label}>Type de job</label>
+          <label style={styles.label}>Job Type</label>
           <select
             value={newJob.jobType}
             onChange={(e) => setNewJob({ ...newJob, jobType: e.target.value })}
             style={styles.input}
           >
             <option value="Full-time">Full-time</option>
-            <option value="Part-time">Part-time</option>
+            <option value="Part-time">Internship</option>
             <option value="Freelance">Freelance</option>
           </select>
         </div>
@@ -68,7 +74,7 @@ const AddJobPage = () => {
           />
         </div>
 
-        <button type="submit" style={styles.submitButton}>Ajouter</button>
+        <button type="submit" style={styles.submitButton}>Add</button>
       </form>
     </div>
   );

@@ -38,7 +38,7 @@ function Header() {
 
                   {/* Boutons pour Discuter et Login */}
                   <div className="header-btn d-none f-right d-lg-block">
-                    <a href="/Chatbot" className="btn head-btn1">Discuter</a>
+                    
                     <a href="/login" className="btn head-btn2">Login</a>
                   </div>
                 </div>

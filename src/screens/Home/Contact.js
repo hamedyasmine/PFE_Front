@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios"; // Importer axios
 import Header from "./Homee/Header";
 import Footer from "./Homee/Footer";
+import ChatBubble from "../chatboat/chatboat";
 import ContactItem from "../../components/ContactItem";
 
 function Contact() {
@@ -185,6 +186,7 @@ function Contact() {
                 </div>
               )}
             </div>
+            <ChatBubble/>
 
             {/* Contact Information */}
             <div className="col-lg-3 offset-lg-1">

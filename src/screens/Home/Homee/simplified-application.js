@@ -1,7 +1,30 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import Header from "./Header";
 
 function SimplifiedApplication() {
+    const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetch("http://localhost:5000/api/categories")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setCategories(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error loading categories:", err);
+        setError("Failed to load categories. Please try again later.");
+        setIsLoading(false);
+      });
+  }, []);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -10,25 +33,50 @@ function SimplifiedApplication() {
     jobType: "",
     gender: "",
     cv: null,
+    cvSpeaking: null, // ➔ nouveau champ ajouté ici
+    verificationAnswer: "",
   });
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
   };
+  const [errors, setErrors] = useState({});
+
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     setFormData({ ...formData, cv: file });
   };
 
+  const handleSpeakingCvChange = (event) => {
+    const file = event.target.files[0];
+    setFormData({ ...formData, cvSpeaking: file });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const newErrors = {};
+    if (!formData.firstName.trim()) newErrors.firstName = "Add First Name.";
+    if (!formData.lastName.trim()) newErrors.lastName = "Add Last Name.";
+    if (formData.verificationAnswer.trim() !== "7") {
+  newErrors.verificationAnswer = "La réponse à la question est incorrecte.";
+}
+
+  
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    } else {
+      setErrors({});
+    }
 
     const formDataToSend = new FormData();
-    Object.entries(formData).forEach(([key, value]) =>
-      formDataToSend.append(key, value)
-    );
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null) { // ➔ pour ne pas envoyer de "null"
+        formDataToSend.append(key, value);
+      }
+    });
 
     try {
       const response = await fetch("http://localhost:5000/api/applications-simplifiees/apply", {
@@ -76,48 +124,63 @@ function SimplifiedApplication() {
           </h2>
 
           <form onSubmit={handleSubmit}>
+          {[
+  { label: "First Name", name: "firstName", type: "text" },
+  { label: "Last Name", name: "lastName", type: "text" },
+  { label: "Email", name: "email", type: "email" }
+].map(({ label, name, type }) => (
+  <div key={name} style={{ marginBottom: "20px" }}>
+    <label style={{ fontWeight: "600", marginBottom: "5px", display: "block" }}>
+      {label}
+    </label>
+    <input
+      type={type}
+      name={name}
+      value={formData[name]}
+      onChange={handleChange}
+      
+      style={{
+        width: "100%",
+        padding: "12px",
+        border: "1px solid #ccc",
+        borderRadius: "8px",
+        fontSize: "15px",
+      }}
+    />
+    {errors[name] && (
+      <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>{errors[name]}</p>
+    )}
+  </div>
+))}
+  <select
+  name="category"
+  value={formData.category}
+  onChange={handleChange}
+  required
+  style={{
+    width: "100%",
+    padding: "12px",
+    border: errors.category ? "1px solid red" : "1px solid #ccc",
+    borderRadius: "8px",
+    fontSize: "15px",
+    backgroundColor: "#fff",
+  }}
+>
+  <option value="">Select Category</option>
+  {isLoading ? (
+    <option disabled>Loading categories...</option>
+  ) : (
+    categories.map((category) => (
+      <option key={category._id} value={category.name}>
+        {category.name}
+      </option>
+    ))
+  )}
+</select>
+             
             {[
-              { label: "First Name", name: "firstName", type: "text" },
-              { label: "Last Name", name: "lastName", type: "text" },
-              { label: "Email", name: "email", type: "email" },
-            ].map(({ label, name, type }) => (
-              <div key={name} style={{ marginBottom: "20px" }}>
-                <label style={{ fontWeight: "600", marginBottom: "5px", display: "block" }}>
-                  {label}
-                </label>
-                <input
-                  type={type}
-                  name={name}
-                  value={formData[name]}
-                  onChange={handleChange}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    border: "1px solid #ccc",
-                    borderRadius: "8px",
-                    fontSize: "15px",
-                  }}
-                />
-              </div>
-            ))}
-
-            {[
-              {
-                label: "Category",
-                name: "category",
-                options: ["Informatique", "Marketing", "Finance"],
-              },
-              {
-                label: "Job Type",
-                name: "jobType",
-                options: ["Full-time", "Part-time", "Internship"],
-              },
-              {
-                label: "Gender",
-                name: "gender",
-                options: ["Male", "Female", "Other"],
-              },
+              { label: "Job Type", name: "jobType", options: ["Full-time", "Part-time", "Internship"] },
+              { label: "Gender", name: "gender", options: ["Male", "Female", "Other"] },
             ].map(({ label, name, options }) => (
               <div key={name} style={{ marginBottom: "20px" }}>
                 <label style={{ fontWeight: "600", marginBottom: "5px", display: "block" }}>
@@ -127,7 +190,7 @@ function SimplifiedApplication() {
                   name={name}
                   value={formData[name]}
                   onChange={handleChange}
-                  required
+                  
                   style={{
                     width: "100%",
                     padding: "12px",
@@ -137,6 +200,7 @@ function SimplifiedApplication() {
                     backgroundColor: "#fff",
                   }}
                 >
+                
                   <option value="">Select {label}</option>
                   {options.map((option) => (
                     <option key={option} value={option}>
@@ -156,7 +220,7 @@ function SimplifiedApplication() {
                 name="cv"
                 accept=".pdf,.doc,.docx"
                 onChange={handleFileChange}
-                required
+                
                 style={{
                   width: "100%",
                   padding: "10px",
@@ -166,6 +230,48 @@ function SimplifiedApplication() {
                 }}
               />
             </div>
+
+            {/* ➔ Nouveau champ : Upload CV parlant */}
+            <div style={{ marginBottom: "25px" }}>
+              <label style={{ fontWeight: "600", marginBottom: "5px", display: "block" }}>
+                Upload Speaking CV (optional)
+              </label>
+              <input
+                type="file"
+                name="cvSpeaking"
+                accept="audio/*,video/*"
+                onChange={handleSpeakingCvChange}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                  fontSize: "15px",
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: "20px" }}>
+  <label style={{ fontWeight: "600", marginBottom: "5px", display: "block" }}>
+    Combien font 3 + 4 ?
+  </label>
+  <input
+    type="text"
+    name="verificationAnswer"
+    value={formData.verificationAnswer}
+    onChange={handleChange}
+    style={{
+      width: "100%",
+      padding: "12px",
+      border: "1px solid #ccc",
+      borderRadius: "8px",
+      fontSize: "15px",
+    }}
+  />
+  {errors.verificationAnswer && (
+    <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>{errors.verificationAnswer}</p>
+  )}
+</div>
+
 
             <div style={{ textAlign: "center" }}>
               <button

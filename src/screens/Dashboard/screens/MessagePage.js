@@ -7,6 +7,10 @@ function MessagePage() {
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [filterTerm, setFilterTerm] = useState('');
   const [showImportantOnly, setShowImportantOnly] = useState(false);
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const isAdmin = role === "admin";
+
 
   // Récupérer les messages depuis le backend
   useEffect(() => {
@@ -47,13 +51,18 @@ function MessagePage() {
 
   const handleDeleteMessage = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/contact/messages/${id}`);
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+  
+      await axios.delete(`http://localhost:5000/api/contact/messages/${id}`, config);
       const updatedMessages = messages.filter(message => message._id !== id);
       setMessages(updatedMessages);
     } catch (error) {
       console.error('Erreur lors de la suppression', error);
     }
   };
+  
 
   const toggleImportant = async (id, currentValue) => {
     try {
@@ -83,7 +92,7 @@ function MessagePage() {
         <div style={styles.controls}>
           <input
             type="text"
-            placeholder="Rechercher par nom..."
+            placeholder="Search by name..."
             value={filterTerm}
             onChange={(e) => setFilterTerm(e.target.value)}
             style={styles.input}
@@ -94,13 +103,13 @@ function MessagePage() {
               checked={showImportantOnly}
               onChange={() => setShowImportantOnly(!showImportantOnly)}
             />
-            Messages importants
+             Important messages
           </label>
         </div>
 
         <div style={styles.messageList}>
           {filteredMessages.length === 0 ? (
-            <p>Aucun message trouvé.</p>
+            <p>No messages found</p>
           ) : (
             filteredMessages.map(message => (
               <div key={message._id} style={styles.messageItem}>
@@ -126,12 +135,12 @@ function MessagePage() {
                       onClick={() => handleDeleteMessage(message._id)}
                       style={styles.deleteButton}
                     >
-                      Supprimer
+                      Delete
                     </button>
                   </div>
                 </div>
                 <p><strong>Email:</strong> {message.email}</p>
-                <p><strong>Sujet:</strong> {message.subject}</p>
+                <p><strong>Subject:</strong> {message.subject}</p>
                 <p><strong>Message:</strong> {message.message}</p>
                 <p style={styles.date}><strong>Date:</strong> {formatDate(message.createdAt)}</p>
               </div>

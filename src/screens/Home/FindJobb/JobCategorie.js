@@ -19,7 +19,7 @@ function JobCategorie({ onCategoryChange }) {
 
   return (
     <div>
-      <h4>Catégorie</h4>
+      <h4>Category</h4>
       <select onChange={(e) => onCategoryChange(e.target.value)}>
         <option value="">Toutes</option>
         {categories.map((cat) => (
